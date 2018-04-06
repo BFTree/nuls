@@ -222,7 +222,7 @@ public class NodesManager implements Runnable {
             }
             //If it is a malicious node, or the node type is "IN",
             //remove it at once
-            if (node.getStatus() == Node.BAD || node.getStatus() == Node.IN) {
+            if (node.getStatus() == Node.BAD || node.getType() == Node.IN) {
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
                 connectedNodes.remove(nodeId);

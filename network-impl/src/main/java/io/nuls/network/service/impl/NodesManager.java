@@ -176,22 +176,28 @@ public class NodesManager implements Runnable {
     }
 
     public void addNode(Node node) {
-        if (!disConnectNodes.containsKey(node.getId()) &&
-                !canConnectNodes.containsKey(node.getId()) &&
-                !connectedNodes.containsKey(node.getId())) {
+        lock.lock();
+        try {
+            if (!disConnectNodes.containsKey(node.getId()) &&
+                    !canConnectNodes.containsKey(node.getId()) &&
+                    !connectedNodes.containsKey(node.getId())) {
 
-            if (node.getType() == Node.IN) {
-                disConnectNodes.put(node.getId(), node);
-            } else {
-                Map<String, Node> nodeMap = getNodes();
-                for (Node n : nodeMap.values()) {
-                    if (n.getIp().equals(node.getIp())) {
-                        return;
+                if (node.getType() == Node.IN) {
+                    disConnectNodes.put(node.getId(), node);
+                } else {
+                    Map<String, Node> nodeMap = getNodes();
+                    for (Node n : nodeMap.values()) {
+                        if (n.getIp().equals(node.getIp())) {
+                            return;
+                        }
                     }
+                    disConnectNodes.put(node.getId(), node);
                 }
-                disConnectNodes.put(node.getId(), node);
             }
+        } finally {
+            lock.unlock();
         }
+
     }
 
     public void removeNode(String nodeId) {

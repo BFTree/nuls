@@ -25,6 +25,7 @@ package io.nuls.network.message.impl;
 
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.event.BaseEvent;
+import io.nuls.core.utils.network.IpUtil;
 import io.nuls.network.entity.Node;
 import io.nuls.network.message.NetworkCacheService;
 import io.nuls.network.message.NetworkEventResult;
@@ -61,9 +62,12 @@ public class NodeEventHandler implements NetWorkEventHandler {
         Map<String, Node> outNodes = getNetworkService().getNodes();
         boolean exist = false;
         for (Node newNode : event.getEventBody().getNodes()) {
+            if (IpUtil.getIps().contains(newNode.getIp())) {
+                continue;
+            }
             exist = false;
             for (Node outNode : outNodes.values()) {
-                if (outNode.getIp().equals(node.getIp())) {
+                if (outNode.getIp().equals(newNode.getIp())) {
                     exist = true;
                     break;
                 }

@@ -43,7 +43,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         for (Node n : nodes.values()) {
             //both ip and port equals , it means the node is myself
             if (n.getIp().equals(channel.remoteAddress().getHostString()) && n.getPort() != channel.remoteAddress().getPort()) {
-                Log.info("----------------------client already had a out node: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
+                Log.info("----------------------client: it already had a connection: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
                 ctx.channel().close();
                 return;
             }

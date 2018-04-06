@@ -347,7 +347,9 @@ public class NodesManager implements Runnable {
             if (connectedNodes.isEmpty() && canConnectNodes.isEmpty()) {
                 List<Node> nodes = getSeedNodes();
                 for (Node node : nodes) {
-                    disConnectNodes.put(node.getId(), node);
+                    if (!disConnectNodes.containsKey(node.getId())) {
+                        disConnectNodes.put(node.getId(), node);
+                    }
                 }
             } else if (connectedNodes.size() >= network.maxOutCount()) {
                 removeSeedNode();

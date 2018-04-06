@@ -220,8 +220,11 @@ public class NodesManager implements Runnable {
             for (String groupName : node.getGroupSet()) {
                 removeNodeFromGroup(groupName, node.getId());
             }
-            //If it is a malicious node, or the node type is "IN",
-            //remove it at once
+            //If it is a malicious node, or the node type is "IN",remove it at once
+            /**
+             * Because the port number is not reliable,
+             * the "IN" node will not attempt to connect again after the connection fails, so it should be removed from the map at once
+             */
             if (node.getStatus() == Node.BAD || node.getType() == Node.IN) {
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
@@ -343,11 +346,7 @@ public class NodesManager implements Runnable {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
         while (running) {
-            try {
-                Thread.sleep(6000);
-            } catch (InterruptedException e) {
 
-            }
             for (Node node : connectedNodes.values()) {
                 System.out.println("------------------------" + node.getId() + ",type:" + node.getType());
             }
@@ -387,6 +386,12 @@ public class NodesManager implements Runnable {
             size = network.maxOutCount() - nodeGroups.get(NetworkConstant.NETWORK_NODE_OUT_GROUP).size();
             if (size > 0) {
                 discoverHandler.findOtherNode(size);
+            }
+
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+
             }
         }
     }

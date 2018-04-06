@@ -221,7 +221,7 @@ public class NodesManager implements Runnable {
                 removeNodeFromGroup(groupName, node.getId());
             }
 
-            if (node.getStatus() == Node.BAD || node.getType() == Node.IN) {
+            if (node.getStatus() == Node.BAD) {
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
                 connectedNodes.remove(nodeId);
@@ -331,13 +331,13 @@ public class NodesManager implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-        try {
-            Thread.sleep(6000);
-        } catch (InterruptedException e) {
-
-        }
 
         while (running) {
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+
+            }
             for (Node node : connectedNodes.values()) {
                 System.out.println("------------------------" + node.getId() + ",type:" + node.getType());
             }
@@ -356,8 +356,8 @@ public class NodesManager implements Runnable {
             //unConnectNodes untime try to connect
             for (Node node : disConnectNodes.values()) {
                 if (node.getType() == Node.OUT && node.getStatus() == Node.CLOSE) {
-                    connectionManager.connectionNode(node);
-                    if (node.getLastFailTime() < TimeService.currentTimeMillis() && isSeedNode(node.getIp())) {
+
+                    if (node.getLastFailTime() < TimeService.currentTimeMillis() || isSeedNode(node.getIp())) {
                         connectionManager.connectionNode(node);
                     }
                 }
@@ -376,7 +376,6 @@ public class NodesManager implements Runnable {
             if (size > 0) {
                 discoverHandler.findOtherNode(size);
             }
-
         }
     }
 

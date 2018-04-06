@@ -309,6 +309,11 @@ public class NodesManager implements Runnable {
         }
     }
 
+
+    private boolean isSeedNode(String ip) {
+        return network.getSeedIpList().contains(ip);
+    }
+
     /**
      * check the nodes when closed try to connect other one
      */
@@ -337,7 +342,8 @@ public class NodesManager implements Runnable {
             //unConnectNodes untime try to connect
             for (Node node : disConnectNodes.values()) {
                 if (node.getType() == Node.OUT && node.getStatus() == Node.CLOSE) {
-                    if (node.getLastFailTime() < TimeService.currentTimeMillis()) {
+                    connectionManager.connectionNode(node);
+                    if (node.getLastFailTime() < TimeService.currentTimeMillis() && isSeedNode(node.getIp())) {
                         connectionManager.connectionNode(node);
                     }
                 }

@@ -81,7 +81,7 @@ public class VersionEventHandler implements NetWorkEventHandler {
         checkVersion(event.getNulsVersion());
         node.setLastTime(TimeService.currentTimeMillis());
 
-        networkService.handshakeNode(node);
+        getNetworkService().handshakeNode(node);
 
         return null;
     }

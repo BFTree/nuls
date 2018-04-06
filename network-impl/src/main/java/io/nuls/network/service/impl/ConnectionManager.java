@@ -96,6 +96,7 @@ public class ConnectionManager {
         TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "node connection", new Runnable() {
             @Override
             public void run() {
+                node.setStatus(Node.WAIT);
                 NettyClient client = new NettyClient(node);
                 client.start();
             }

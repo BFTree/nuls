@@ -53,7 +53,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         // if has a node with same ip, and it's a out node, close this channel
         // if More than 10 in nodes of the same IP, close this channel
         int count = 0;
-        for (Node n : networkService.getNodes().values()) {
+        for (Node n : getNetworkService().getNodes().values()) {
             if (n.getIp().equals(remoteIP)) {
                 if (n.getType() == Node.OUT && n.isAlive()) {
                     ctx.channel().close();
@@ -96,6 +96,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
         Log.info("---------------ServerChannelHandler exceptionCaught :" + cause.getMessage());
         ctx.channel().close();
     }

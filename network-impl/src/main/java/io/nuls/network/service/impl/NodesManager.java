@@ -221,7 +221,7 @@ public class NodesManager implements Runnable {
                 removeNodeFromGroup(groupName, node.getId());
             }
 
-            if (node.getStatus() == Node.BAD) {
+            if (node.getStatus() == Node.BAD || node.getType() == Node.IN) {
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
                 connectedNodes.remove(nodeId);
@@ -245,7 +245,6 @@ public class NodesManager implements Runnable {
                 }
                 getNodeDao().removeNode(nodeId);
             } else {
-                node.setType(Node.OUT);
                 node.setFailCount(node.getFailCount() + 1);
                 node.setLastFailTime(TimeService.currentTimeMillis() + DateUtil.MINUTE_TIME * node.getFailCount());
                 if (!disConnectNodes.containsKey(nodeId)) {

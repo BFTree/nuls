@@ -177,8 +177,8 @@ public class NodesManager implements Runnable {
 
     public void addNode(Node node) {
         if (!disConnectNodes.containsKey(node.getId()) &&
-                canConnectNodes.containsKey(node.getId()) &&
-                connectedNodes.containsKey(node.getId())) {
+                !canConnectNodes.containsKey(node.getId()) &&
+                !connectedNodes.containsKey(node.getId())) {
 
             if (node.getType() == Node.IN) {
                 disConnectNodes.put(node.getId(), node);

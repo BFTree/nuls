@@ -332,6 +332,11 @@ public class NodesManager implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+        try {
+            Thread.sleep(6000);
+        } catch (InterruptedException e) {
+
+        }
 
         while (running) {
             for (Node node : connectedNodes.values()) {
@@ -372,11 +377,7 @@ public class NodesManager implements Runnable {
             if (size > 0) {
                 discoverHandler.findOtherNode(size);
             }
-            try {
-                Thread.sleep(6000);
-            } catch (InterruptedException e) {
 
-            }
         }
     }
 

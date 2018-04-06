@@ -235,11 +235,20 @@ public class NodesManager implements Runnable {
                 connectedNodes.remove(nodeId);
             }
             if (node.isCanConnect()) {
-                node.setLastFailTime(TimeService.currentTimeMillis() + DateUtil.MINUTE_TIME * 10);
                 if (!canConnectNodes.containsKey(nodeId)) {
+                    for (Node n : canConnectNodes.values()) {
+                        if (node.getIp().equals(n.getIp())) {
+                            node.setFailCount(node.getFailCount() + 1);
+                            node.setLastFailTime(TimeService.currentTimeMillis() + DateUtil.MINUTE_TIME * node.getFailCount());
+                            return;
+                        }
+                    }
+                    node.setLastFailTime(TimeService.currentTimeMillis() + DateUtil.MINUTE_TIME * 10);
+                    node.setType(Node.OUT);
                     canConnectNodes.put(nodeId, node);
                     disConnectNodes.remove(nodeId);
                 }
+
             } else if (node.getFailCount() >= 20) {
                 if (disConnectNodes.containsKey(nodeId)) {
                     disConnectNodes.remove(nodeId);

@@ -156,7 +156,7 @@ public class NodeDiscoverHandler implements Runnable {
             }
 
             try {
-                Thread.sleep(6000);
+                Thread.sleep(3500);
             } catch (InterruptedException e) {
                 Log.error(e);
             }

@@ -45,8 +45,8 @@ public class DevNetworkParam extends AbstractNetworkParam {
         this.packetMagic = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_MAGIC, 123456789);
 
         seedIpList.add("192.168.1.131");
-        seedIpList.add("192.168.1.203");
-        seedIpList.add("192.168.1.204");
+//        seedIpList.add("192.168.1.203");
+//        seedIpList.add("192.168.1.204");
 //        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.131", port));
 //        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.204", port));
 

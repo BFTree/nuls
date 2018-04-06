@@ -79,17 +79,17 @@ public class ConnectionManager {
     }
 
     public void start() throws InterruptedException {
-        TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "node connection", new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    nettyServer.start();
-                } catch (InterruptedException e) {
-                    Log.error(e);
-                }
-            }
-        }, false);
-
+//        TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "node connection", new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//
+//                } catch (InterruptedException e) {
+//                    Log.error(e);
+//                }
+//            }
+//        }, false);
+        nettyServer.start();
     }
 
     public void connectionNode(Node node) {

@@ -71,7 +71,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------server channelActive ------------------------- ");
+  //      Log.info("----------------------server channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
@@ -83,7 +83,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------server channelInactive ------------------------- ");
+  //      Log.info("----------------------server channelInactive ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);

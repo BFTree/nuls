@@ -26,14 +26,14 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------client channelActive ------------------------- ");
+        //   Log.info("----------------------client channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
         if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
-            System.out.println("-------------------Client active node status  = " + node.getStatus() + "-------------------------------");
+            System.out.println("-------------------Client active node: " + nodeId + "  status  = " + node.getStatus() + "-------------------------------");
             ctx.channel().close();
             return;
         }
@@ -53,7 +53,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------client channelInactive ------------------------- ");
+        //    Log.info("----------------------client channelInactive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
@@ -84,7 +84,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        Log.info("----------------ClientChannelHandler exceptionCaught:" + cause.getMessage());
+        //      Log.info("----------------ClientChannelHandler exceptionCaught:" + cause.getMessage());
         ctx.channel().close();
     }
 

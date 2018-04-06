@@ -128,6 +128,8 @@ public class NodesManager implements Runnable {
             node.setMagicNumber(network.packetMagic());
             node.setSeverPort(node.getPort());
             node.setFailCount(0);
+
+            seedNodes.add(node);
         }
         return seedNodes;
     }
@@ -311,7 +313,13 @@ public class NodesManager implements Runnable {
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
+
         while (running) {
+            for (Node node : connectedNodes.values()) {
+                System.out.println("------------------------" + node.getId() + ",type:" + node.getType());
+            }
+
+
             // check the connectedNodes, if it is empty, try to connect seed node,
             // if connectedNode's count enough, closing the connection with the seed node
             if (connectedNodes.isEmpty() && canConnectNodes.isEmpty()) {

@@ -25,6 +25,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        Log.info("---------------------- server channelRegistered ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String remoteIP = channel.remoteAddress().getHostString();
 //        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
@@ -74,7 +75,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        //      Log.info("----------------------server channelActive ------------------------- ");
+        Log.info("---------------------- server channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
@@ -86,7 +87,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        //      Log.info("----------------------server channelInactive ------------------------- ");
+        Log.info("---------------------- server channelInactive ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);
@@ -99,8 +100,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
-        Log.info("---------------ServerChannelHandler exceptionCaught :" + cause.getMessage());
+        Log.error("--------------- ServerChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

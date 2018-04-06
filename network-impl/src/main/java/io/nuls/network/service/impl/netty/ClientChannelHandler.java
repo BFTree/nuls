@@ -25,18 +25,24 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        Log.info("----------------------client channelRegistered ------------------------- ");
+        System.out.println(ctx.channel().isOpen());
+    }
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        //   Log.info("----------------------client channelActive ------------------------- ");
+           Log.info("----------------------client channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
-        if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
-            System.out.println("-------------------Client active node: " + nodeId + "  status  = " + node.getStatus() + "-------------------------------");
-            ctx.channel().close();
-            return;
-        }
+//        if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
+//            System.out.println("-------------------Client active node: " + nodeId + "  status  = " + node.getStatus() + "-------------------------------");
+//            ctx.channel().close();
+//            return;
+//        }
+
         Map<String, Node> nodes = networkService.getNodes();
         // If a node with the same IP already in nodes, as a out node, can not add anymore
         for (Node n : nodes.values()) {

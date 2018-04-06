@@ -25,13 +25,8 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------client channelRegistered ------------------------- ");
-        System.out.println(ctx.channel().isOpen());
-    }
-    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-           Log.info("----------------------client channelActive ------------------------- ");
+         //  Log.info("----------------------client channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());

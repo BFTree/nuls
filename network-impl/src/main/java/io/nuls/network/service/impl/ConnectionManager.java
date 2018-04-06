@@ -93,6 +93,9 @@ public class ConnectionManager {
     }
 
     public void connectionNode(Node node) {
+        if (network.getLocalIps().contains(node.getIp())) {
+            return;
+        }
         TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "node connection", new Runnable() {
             @Override
             public void run() {

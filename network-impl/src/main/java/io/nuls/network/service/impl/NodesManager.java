@@ -179,7 +179,18 @@ public class NodesManager implements Runnable {
         if (!disConnectNodes.containsKey(node.getId()) &&
                 canConnectNodes.containsKey(node.getId()) &&
                 connectedNodes.containsKey(node.getId())) {
-            disConnectNodes.put(node.getId(), node);
+
+            if (node.getType() == Node.IN) {
+                disConnectNodes.put(node.getId(), node);
+            } else {
+                Map<String, Node> nodeMap = getNodes();
+                for (Node n : nodeMap.values()) {
+                    if (n.getIp().equals(node.getIp())) {
+                        return;
+                    }
+                }
+                disConnectNodes.put(node.getId(), node);
+            }
         }
     }
 
@@ -234,6 +245,7 @@ public class NodesManager implements Runnable {
                 }
                 getNodeDao().removeNode(nodeId);
             } else {
+                node.setType(Node.OUT);
                 node.setFailCount(node.getFailCount() + 1);
                 node.setLastFailTime(TimeService.currentTimeMillis() + DateUtil.MINUTE_TIME * node.getFailCount());
                 if (!disConnectNodes.containsKey(nodeId)) {
@@ -321,12 +333,10 @@ public class NodesManager implements Runnable {
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 
-
         while (running) {
             for (Node node : connectedNodes.values()) {
                 System.out.println("------------------------" + node.getId() + ",type:" + node.getType());
             }
-
 
             // check the connectedNodes, if it is empty, try to connect seed node,
             // if connectedNode's count enough, closing the connection with the seed node
@@ -335,7 +345,7 @@ public class NodesManager implements Runnable {
                 for (Node node : nodes) {
                     disConnectNodes.put(node.getId(), node);
                 }
-            } else if (connectedNodes.size() + canConnectNodes.size() >= network.maxOutCount()) {
+            } else if (connectedNodes.size() >= network.maxOutCount()) {
                 removeSeedNode();
             }
 

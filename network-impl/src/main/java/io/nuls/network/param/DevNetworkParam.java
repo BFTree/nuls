@@ -24,16 +24,11 @@
 package io.nuls.network.param;
 
 import io.nuls.core.context.NulsContext;
-import io.nuls.core.exception.NulsException;
-import io.nuls.core.utils.log.Log;
 import io.nuls.network.NetworkContext;
 import io.nuls.network.constant.NetworkConstant;
-import io.nuls.network.entity.Node;
 import io.nuls.network.entity.param.AbstractNetworkParam;
 import io.nuls.network.filter.impl.DefaultMessageFilter;
 import io.nuls.network.message.DefaultNetWorkEventHandlerFactory;
-
-import java.net.InetSocketAddress;
 
 /**
  * @author vivi
@@ -50,6 +45,7 @@ public class DevNetworkParam extends AbstractNetworkParam {
         this.packetMagic = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_MAGIC, 123456789);
 
         seedIpList.add("192.168.1.131");
+        seedIpList.add("192.168.1.203");
         seedIpList.add("192.168.1.204");
 //        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.131", port));
 //        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.204", port));

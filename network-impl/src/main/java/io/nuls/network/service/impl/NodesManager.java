@@ -220,8 +220,9 @@ public class NodesManager implements Runnable {
             for (String groupName : node.getGroupSet()) {
                 removeNodeFromGroup(groupName, node.getId());
             }
-
-            if (node.getStatus() == Node.BAD) {
+            //If it is a malicious node, or the node type is "IN",
+            //remove it at once
+            if (node.getStatus() == Node.BAD || node.getStatus() == Node.IN) {
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
                 connectedNodes.remove(nodeId);

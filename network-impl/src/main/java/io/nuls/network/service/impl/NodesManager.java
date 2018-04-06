@@ -122,7 +122,10 @@ public class NodesManager implements Runnable {
 
     public List<Node> getSeedNodes() {
         List<Node> seedNodes = new ArrayList<>();
-        for (String ip : network.getLocalIps()) {
+        for (String ip : network.getSeedIpList()) {
+            if (network.getLocalIps().contains(ip)) {
+                continue;
+            }
             Node node = new Node(network.packetMagic(), Node.OUT, ip, network.port());
             node.setStatus(Node.CLOSE);
             node.setMagicNumber(network.packetMagic());

@@ -30,48 +30,42 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String remoteIP = channel.remoteAddress().getHostString();
-        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
-        Node node = getNetworkService().getNode(remoteId);
-        if (node != null) {
-            if (node.getStatus() == Node.CONNECT) {
-                ctx.channel().close();
-                return;
-            }
-            //When nodes try to connect to each other but not connected, select one of the smaller IP addresses as the server
-//            if (node.getType() == Node.OUT) {
-//                String localIP = InetAddress.getLocalHost().getHostAddress();
-//                boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
-//
-//                if (!isLocalServer) {
-//                    ctx.channel().close();
-//                    return;
-//                } else {
-//                    getNetworkService().removeNode(remoteId);
-//                }
+//        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
+//        Node node = getNetworkService().getNode(remoteId);
+//        if (node != null) {
+//            if (node.getStatus() == Node.CONNECT) {
+//                ctx.channel().close();
+//                return;
 //            }
-        } else {
-            // if has a node with same ip, and it's a out node, close this channel
-            // if More than 10 in nodes of the same IP, close this channel
-            int count = 0;
-            for (Node n : networkService.getNodes().values()) {
-                if (n.getIp().equals(remoteIP)) {
-                    if (n.getType() == Node.OUT && n.getStatus() != Node.CLOSE) {
+//            //When nodes try to connect to each other but not connected, select one of the smaller IP addresses as the server
+////            if (node.getType() == Node.OUT) {
+////                String localIP = InetAddress.getLocalHost().getHostAddress();
+////                boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
+////
+////                if (!isLocalServer) {
+////                    ctx.channel().close();
+////                    return;
+////                } else {
+////                    getNetworkService().removeNode(remoteId);
+////                }
+////            }
+//        } else {
+        // if has a node with same ip, and it's a out node, close this channel
+        // if More than 10 in nodes of the same IP, close this channel
+        int count = 0;
+        for (Node n : networkService.getNodes().values()) {
+            if (n.getIp().equals(remoteIP)) {
+                if (n.getType() == Node.OUT && n.isAlive()) {
+                    ctx.channel().close();
+                    return;
+                } else {
+                    count++;
+                    if (count == 10) {
                         ctx.channel().close();
                         return;
-                    } else {
-                        count++;
-                        if (count == 10) {
-                            ctx.channel().close();
-                            return;
-                        }
                     }
                 }
             }
-        }
-        NodeGroup group = getNetworkService().getNodeGroup(NetworkConstant.NETWORK_NODE_IN_GROUP);
-        if (group.size() > getNetworkService().getNetworkParam().maxInCount()) {
-            ctx.channel().close();
-            return;
         }
     }
 
@@ -83,7 +77,8 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         NioChannelMap.add(channelId, channel);
         Node node = new Node(Node.IN, channel.remoteAddress().getHostString(), channel.remoteAddress().getPort(), channelId);
         node.setStatus(Node.CONNECT);
-        getNetworkService().addNodeToGroup(NetworkConstant.NETWORK_NODE_IN_GROUP, node);
+        getNetworkService().addNode(node);
+//        getNetworkService().addNodeToGroup(NetworkConstant.NETWORK_NODE_IN_GROUP, node);
     }
 
     @Override

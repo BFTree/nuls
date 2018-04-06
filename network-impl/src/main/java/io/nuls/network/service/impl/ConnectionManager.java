@@ -124,6 +124,7 @@ public class ConnectionManager {
                     BaseEvent event = EventManager.getInstance(message.getData());
                     processMessage(event, node);
                 } else {
+                    node.setStatus(Node.BAD);
                     networkService.removeNode(node.getId());
                 }
             }

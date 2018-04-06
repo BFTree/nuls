@@ -25,16 +25,13 @@ package io.nuls.network.message.impl;
 
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.event.BaseEvent;
-import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.entity.Node;
 import io.nuls.network.message.NetworkCacheService;
 import io.nuls.network.message.NetworkEventResult;
 import io.nuls.network.message.entity.NodeEvent;
 import io.nuls.network.message.handler.NetWorkEventHandler;
 import io.nuls.network.service.NetworkService;
-import sun.nio.ch.Net;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,7 +71,7 @@ public class NodeEventHandler implements NetWorkEventHandler {
             if (!exist) {
                 newNode.setType(Node.OUT);
                 newNode.setStatus(Node.WAIT);
-                getNetworkService().addNodeToGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP, newNode);
+                getNetworkService().addNode(newNode);
             }
         }
         return null;

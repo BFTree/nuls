@@ -1,18 +1,18 @@
 /**
  * MIT License
- *
+ * <p>
  * Copyright (c) 2017-2018 nuls.io
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,6 +28,7 @@ import io.nuls.core.exception.NulsException;
 import io.nuls.core.utils.log.Log;
 import io.nuls.network.NetworkContext;
 import io.nuls.network.constant.NetworkConstant;
+import io.nuls.network.entity.Node;
 import io.nuls.network.entity.param.AbstractNetworkParam;
 import io.nuls.network.filter.impl.DefaultMessageFilter;
 import io.nuls.network.message.DefaultNetWorkEventHandlerFactory;
@@ -48,13 +49,10 @@ public class DevNetworkParam extends AbstractNetworkParam {
         this.port = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_SERVER_PORT, 8003);
         this.packetMagic = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_MAGIC, 123456789);
 
-        //InetSocketAddress address1 = new InetSocketAddress("192.168.1.203", port);
-        InetSocketAddress address2 = new InetSocketAddress("192.168.1.131", port);
-        InetSocketAddress address3 = new InetSocketAddress("192.168.1.204", port);
-
-        //seedNodes.add(address1);
-        seedNodes.add(address2);
-        seedNodes.add(address3);
+        seedIpList.add("192.168.1.131");
+        seedIpList.add("192.168.1.204");
+//        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.131", port));
+//        seedNodes.add(new Node(packetMagic, Node.OUT, "192.168.1.204", port));
 
         this.messageFilter = DefaultMessageFilter.getInstance();
         this.messageHandlerFactory = DefaultNetWorkEventHandlerFactory.getInstance();

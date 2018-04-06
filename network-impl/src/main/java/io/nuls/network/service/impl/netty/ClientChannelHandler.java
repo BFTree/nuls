@@ -33,6 +33,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
         if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
+            System.out.println("-------------------Client active node status  = " + node.getStatus() + "-------------------------------");
             ctx.channel().close();
             return;
         }

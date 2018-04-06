@@ -37,11 +37,11 @@ public class NettyClient {
 
     public void start() {
         try {
-            ChannelFuture future = boot.connect(node.getIp(), node.getPort()).sync();
+            ChannelFuture future = boot.connect(node.getIp(), node.getSeverPort()).sync();
             if (future.isSuccess()) {
                 socketChannel = (SocketChannel) future.channel();
             } else {
-                getNetworkService().removeNode(node.getId(), node.getType());
+                getNetworkService().removeNode(node.getId());
             }
             future.channel().closeFuture().sync();
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class NettyClient {
             if (socketChannel != null) {
                 socketChannel.close();
             }
-            getNetworkService().removeNode(node.getId(), node.getType());
+            getNetworkService().removeNode(node.getId());
         }
     }
 

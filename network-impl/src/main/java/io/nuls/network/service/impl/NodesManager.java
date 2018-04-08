@@ -403,14 +403,16 @@ public class NodesManager implements Runnable {
     }
 
     private void removeSeedNode() {
-        Collection<Node> nodes = connectedNodes.values();
-        for (String ip : network.getSeedIpList()) {
-            for (Node n : nodes) {
-                if (n.getIp().equals(ip)) {
-                    removeNode(n.getId());
-                }
-            }
-        }
+//        Collection<Node> nodes = connectedNodes.values();
+//        for (String ip : network.getSeedIpList()) {
+//            for (Node n : nodes) {
+//                if (n.getIp().equals(ip)) {
+//                    removeNode(n.getId());
+//                }
+//            }
+//        }
+        String id = "192.168.1.204:8003";
+        removeNode(id);
     }
 
     public NodeGroup getNodeGroup(String groupName) {

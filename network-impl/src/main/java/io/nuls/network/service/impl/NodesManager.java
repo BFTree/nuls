@@ -108,11 +108,11 @@ public class NodesManager implements Runnable {
     public void start() {
         List<Node> nodes = discoverHandler.getLocalNodes();
         for (Node node : nodes) {
-            disConnectNodes.put(node.getId(), node);
+            addNode(node);
         }
         if (nodes.size() < network.maxOutCount() / 2) {
             for (Node node : getSeedNodes()) {
-                disConnectNodes.put(node.getId(), node);
+                addNode(node);
             }
         }
         running = true;
@@ -175,29 +175,28 @@ public class NodesManager implements Runnable {
         return node;
     }
 
-    public void addNode(Node node) {
+    public boolean addNode(Node node) {
         lock.lock();
         try {
             if (!disConnectNodes.containsKey(node.getId()) &&
                     !canConnectNodes.containsKey(node.getId()) &&
                     !connectedNodes.containsKey(node.getId())) {
-
                 if (node.getType() == Node.IN) {
                     disConnectNodes.put(node.getId(), node);
                 } else {
                     Map<String, Node> nodeMap = getNodes();
                     for (Node n : nodeMap.values()) {
                         if (n.getIp().equals(node.getIp())) {
-                            return;
+                            return false;
                         }
                     }
                     disConnectNodes.put(node.getId(), node);
                 }
             }
+            return true;
         } finally {
             lock.unlock();
         }
-
     }
 
     public void removeNode(String nodeId) {
@@ -231,7 +230,8 @@ public class NodesManager implements Runnable {
              * Because the port number is not reliable,
              * the "IN" node will not attempt to connect again after the connection fails, so it should be removed from the map at once
              */
-            if (node.getStatus() == Node.BAD || node.getType() == Node.IN) {
+            if (node.getStatus() == Node.BAD || (node.getType() == Node.IN && !node.isCanConnect())) {
+                node.destroy();
                 connectedNodes.remove(nodeId);
                 disConnectNodes.remove(nodeId);
                 connectedNodes.remove(nodeId);
@@ -243,7 +243,7 @@ public class NodesManager implements Runnable {
             if (connectedNodes.containsKey(nodeId)) {
                 connectedNodes.remove(nodeId);
             }
-            if (node.isCanConnect()) {
+            if (node.isCanConnect() && canConnectNodes.size() < network.maxOutCount() + network.maxInCount()) {
                 if (!canConnectNodes.containsKey(nodeId)) {
                     for (Node n : canConnectNodes.values()) {
                         if (node.getIp().equals(n.getIp())) {
@@ -325,6 +325,11 @@ public class NodesManager implements Runnable {
         node.setFailCount(0);
         if (!success) {
             node.setCanConnect(true);
+            if (node.getType() == Node.IN) {
+                node.setType(Node.OUT);
+                node.setPort(node.getSeverPort());
+            }
+            getNodeDao().saveChange(NodeTransferTool.toPojo(node));
             removeNode(node.getId());
         } else {
             node.setStatus(Node.HANDSHAKE);
@@ -337,6 +342,7 @@ public class NodesManager implements Runnable {
             connectedNodes.put(node.getId(), node);
             getNodeDao().saveChange(NodeTransferTool.toPojo(node));
         }
+
     }
 
 
@@ -363,7 +369,7 @@ public class NodesManager implements Runnable {
                 List<Node> nodes = getSeedNodes();
                 for (Node node : nodes) {
                     if (!disConnectNodes.containsKey(node.getId())) {
-                        disConnectNodes.put(node.getId(), node);
+                        addNode(node);
                     }
                 }
             } else if (connectedNodes.size() >= network.maxOutCount()) {

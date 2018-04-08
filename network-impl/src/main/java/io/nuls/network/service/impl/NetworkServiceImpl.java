@@ -159,8 +159,8 @@ public class NetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public void addNode(Node node) {
-        nodesManager.addNode(node);
+    public boolean addNode(Node node) {
+        return nodesManager.addNode(node);
     }
 
     @Override

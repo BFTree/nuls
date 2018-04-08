@@ -58,7 +58,7 @@ public interface NetworkService {
 
     Set<String> getNodesIp();
 
-    void addNode(Node node);
+    boolean addNode(Node node);
 
     void handshakeNode(Node node);
 

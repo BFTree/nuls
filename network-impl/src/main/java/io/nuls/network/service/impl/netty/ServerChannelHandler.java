@@ -52,10 +52,10 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         // if has a node with same ip, and it's a out node, close this channel
         // if More than 10 in nodes of the same IP, close this channel
         int count = 0;
-        for (Node n : getNetworkService().getAvailableNodes()) {
+        for (Node n : getNetworkService().getNodes().values()) {
             if (n.getIp().equals(remoteIP)) {
                 count++;
-                if (count == 10) {
+                if (count >= Node.SAME_IP_MAX_COUNT) {
                     ctx.channel().close();
                     return;
                 }
@@ -102,9 +102,9 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
             if (channelId.equals(node.getChannelId())) {
                 getNetworkService().removeNode(nodeId);
             } else {
-                System.out.println("--------------channel id different----------------------");
-                System.out.println(node.getChannelId());
-                System.out.println(channelId);
+                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
+                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
+                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
             }
         }
     }

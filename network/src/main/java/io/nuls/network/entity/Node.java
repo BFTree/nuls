@@ -49,6 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Node extends BaseNulsData {
 
+    public static final int SAME_IP_MAX_COUNT = 10;
+    public static final int FAIL_MAX_COUNT = 20;
+
     private int magicNumber;
 
     private String channelId;
@@ -68,8 +71,6 @@ public class Node extends BaseNulsData {
     private Integer failCount;
 
     private Set<String> groupSet;
-
-    public static final int FAIL_COUNT = 20;
 
     /**
      * 1: inNode ,  2: outNode

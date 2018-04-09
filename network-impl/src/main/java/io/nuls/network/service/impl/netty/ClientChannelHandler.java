@@ -73,6 +73,10 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         if (node != null) {
             if (node.getChannelId() == null || channelId.equals(node.getChannelId())) {
                 getNetworkService().removeNode(node.getId());
+            } else {
+                System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
+                System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
+                System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
             }
         }
     }

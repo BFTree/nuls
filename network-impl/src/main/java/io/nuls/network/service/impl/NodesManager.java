@@ -71,6 +71,8 @@ public class NodesManager implements Runnable {
 
     private boolean running;
 
+    private boolean isSeed;
+
     private static NodesManager instance = new NodesManager();
 
     private NodesManager() {
@@ -106,15 +108,27 @@ public class NodesManager implements Runnable {
      * running node discovery thread
      */
     public void start() {
-        List<Node> nodes = discoverHandler.getLocalNodes();
+        List<Node> nodes;
+        if (isSeed) {
+            nodes = getSeedNodes();
+        } else {
+            nodes = discoverHandler.getLocalNodes();
+            if (nodes.size() < network.maxOutCount() / 2) {
+                int size = network.maxOutCount() / 2 - nodes.size();
+                int count = 0;
+                for (Node node : getSeedNodes()) {
+                    addNode(node);
+                    count++;
+                    if (count == size) {
+                        break;
+                    }
+                }
+            }
+        }
         for (Node node : nodes) {
             addNode(node);
         }
-        if (nodes.size() < network.maxOutCount() / 2) {
-            for (Node node : getSeedNodes()) {
-                addNode(node);
-            }
-        }
+
         running = true;
         TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "NetworkNodeManager", this);
         discoverHandler.start();
@@ -323,14 +337,14 @@ public class NodesManager implements Runnable {
         } else if (node.getType() == Node.OUT) {
             success = addNodeToGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP, node);
         }
-        node.setFailCount(0);
+//        node.setFailCount(0);
         if (!success) {
-            node.setCanConnect(true);
-            if (node.getType() == Node.IN) {
-                node.setType(Node.OUT);
-                node.setPort(node.getSeverPort());
-                node.setId(null);
-            }
+//            node.setCanConnect(true);
+//            if (node.getType() == Node.IN) {
+//                node.setType(Node.OUT);
+//                node.setPort(node.getSeverPort());
+//                node.setId(null);
+//            }
             getNodeDao().saveChange(NodeTransferTool.toPojo(node));
             removeNode(node.getId());
         } else {
@@ -344,11 +358,10 @@ public class NodesManager implements Runnable {
             connectedNodes.put(node.getId(), node);
             getNodeDao().saveChange(NodeTransferTool.toPojo(node));
         }
-
     }
 
 
-    private boolean isSeedNode(String ip) {
+    public boolean isSeedNode(String ip) {
         return network.getSeedIpList().contains(ip);
     }
 
@@ -391,14 +404,13 @@ public class NodesManager implements Runnable {
                         addNode(node);
                     }
                 }
-            } else if (connectedNodes.size() > network.maxOutCount()) {
+            } else if (connectedNodes.size() > network.maxOutCount() && !isSeed) {
                 removeSeedNode();
             }
 
             //unConnectNodes untime try to connect
             for (Node node : disConnectNodes.values()) {
                 if (node.getType() == Node.OUT && node.getStatus() == Node.CLOSE) {
-
                     if (node.getLastFailTime() < TimeService.currentTimeMillis() || isSeedNode(node.getIp())) {
                         connectionManager.connectionNode(node);
                     }
@@ -429,10 +441,14 @@ public class NodesManager implements Runnable {
 
     private void removeSeedNode() {
         Collection<Node> nodes = connectedNodes.values();
+        int count = 0;
         for (String ip : network.getSeedIpList()) {
             for (Node n : nodes) {
                 if (n.getIp().equals(ip)) {
-                    removeNode(n.getId());
+                    count++;
+                    if (count > 2) {
+                        removeNode(n.getId());
+                    }
                 }
             }
         }
@@ -459,5 +475,13 @@ public class NodesManager implements Runnable {
             nodeDao = NulsContext.getServiceBean(NodeDataService.class);
         }
         return nodeDao;
+    }
+
+    public boolean isSeed() {
+        return isSeed;
+    }
+
+    public void setSeed(boolean seed) {
+        isSeed = seed;
     }
 }

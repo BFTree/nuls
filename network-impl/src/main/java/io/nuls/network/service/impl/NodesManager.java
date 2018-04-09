@@ -345,7 +345,10 @@ public class NodesManager implements Runnable {
 //                node.setPort(node.getSeverPort());
 //                node.setId(null);
 //            }
-            getNodeDao().saveChange(NodeTransferTool.toPojo(node));
+            if(!isSeedNode(node.getIp())){
+                getNodeDao().saveChange(NodeTransferTool.toPojo(node));
+            }
+
             removeNode(node.getId());
         } else {
             node.setStatus(Node.HANDSHAKE);
@@ -356,7 +359,10 @@ public class NodesManager implements Runnable {
                 canConnectNodes.remove(node.getId());
             }
             connectedNodes.put(node.getId(), node);
-            getNodeDao().saveChange(NodeTransferTool.toPojo(node));
+
+            if(!isSeedNode(node.getIp())){
+                getNodeDao().saveChange(NodeTransferTool.toPojo(node));
+            }
         }
     }
 

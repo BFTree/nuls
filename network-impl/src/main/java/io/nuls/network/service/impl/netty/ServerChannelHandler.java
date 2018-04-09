@@ -25,8 +25,9 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        Log.info("---------------------- server channelRegistered ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
+        String nodeId = IpUtil.getNodeId(channel.remoteAddress());
+        System.out.println("---------------------- server channelRegistered ------------------------- " + nodeId);
         String remoteIP = channel.remoteAddress().getHostString();
 //        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
 //        Node node = getNetworkService().getNode(remoteId);
@@ -75,9 +76,12 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        SocketChannel channel = (SocketChannel) ctx.channel();
+        String nodeId = IpUtil.getNodeId(channel.remoteAddress());
+        System.out.println("---------------------- server channelActive ------------------------- " + nodeId);
         Log.info("---------------------- server channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
-        SocketChannel channel = (SocketChannel) ctx.channel();
+        //SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
         Node node = new Node(Node.IN, channel.remoteAddress().getHostString(), channel.remoteAddress().getPort(), channelId);
         node.setStatus(Node.CONNECT);
@@ -92,6 +96,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
+        System.out.println("---------------------- server channelInactive ------------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null) {
             if (channelId.equals(node.getChannelId())) {

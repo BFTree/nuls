@@ -30,7 +30,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("---client channelActive --- " + nodeId);
+        System.out.println("----------------------client channelActive ---------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
 //        if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
@@ -45,7 +45,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
             System.out.println(n.toString());
             //both ip and port equals , it means the node is myself
             if (n.getIp().equals(channel.remoteAddress().getHostString()) && n.getPort() != channel.remoteAddress().getPort()) {
-                System.out.println("---client: it already had a connection: " + n.getId() + " type:" + n.getType() + ", this connection: " + IpUtil.getNodeId(channel.remoteAddress()) + "--- ");
+                System.out.println("----------------------client: it already had a connection: " + n.getId() + " type:" + n.getType() + ", this connection: " + IpUtil.getNodeId(channel.remoteAddress()) + "---------------------- ");
                 ctx.channel().close();
                 return;
             }
@@ -68,7 +68,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("---client channelInactive --- " + nodeId);
+        System.out.println("----------------------client channelInactive ---------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null) {
             if (node.getChannelId() == null || channelId.equals(node.getChannelId())) {

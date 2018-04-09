@@ -25,7 +25,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        Log.info("---------------------- server channelRegistered ------------------------- ");
+        Log.debug("---------------------- server channelRegistered ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String remoteIP = channel.remoteAddress().getHostString();
 //        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
@@ -75,7 +75,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("---------------------- server channelActive ------------------------- ");
+        Log.debug("---------------------- server channelActive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
@@ -87,7 +87,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("---------------------- server channelInactive ------------------------- ");
+        Log.debug("---------------------- server channelInactive ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);
@@ -100,7 +100,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Log.error("--------------- ServerChannelHandler exceptionCaught :" + cause.getMessage(), cause);
+        Log.debug("--------------- ServerChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

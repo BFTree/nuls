@@ -43,7 +43,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         for (Node n : nodes.values()) {
             //both ip and port equals , it means the node is myself
             if (n.getIp().equals(channel.remoteAddress().getHostString()) && n.getPort() != channel.remoteAddress().getPort()) {
-                Log.info("----------------------client: it already had a connection: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
+                Log.debug("----------------------client: it already had a connection: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
                 ctx.channel().close();
                 return;
             }
@@ -55,7 +55,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("----------------------client channelInactive ------------------------- ");
+        Log.debug("----------------------client channelInactive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
@@ -86,7 +86,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        Log.error("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
+        Log.debug("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

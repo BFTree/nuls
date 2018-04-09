@@ -68,12 +68,7 @@ public class NetworkServiceImpl implements NetworkService {
 
     public NetworkServiceImpl() {
         this.network = getNetworkInstance();
-        for (String ip : IpUtil.getIps()) {
-            if (isSeedNode(ip)) {
-                network.setMaxInCount(network.maxInCount() * 3);
-                nodesManager.setSeed(true);
-            }
-        }
+
         DefaultMessageFilter.getInstance().addMagicNum(network.packetMagic());
         MessageFilterChain.getInstance().addFilter(DefaultMessageFilter.getInstance());
         NulsContext.setMagicNumber(network.packetMagic());
@@ -105,6 +100,12 @@ public class NetworkServiceImpl implements NetworkService {
         try {
             connectionManager.init();
             nodesManager.init();
+            for (String ip : IpUtil.getIps()) {
+                if (isSeedNode(ip)) {
+                    network.setMaxInCount(network.maxInCount() * 3);
+                    nodesManager.setSeed(true);
+                }
+            }
         } catch (Exception e) {
             Log.error(e);
             throw new NulsRuntimeException(ErrorCode.NET_SERVER_START_ERROR);

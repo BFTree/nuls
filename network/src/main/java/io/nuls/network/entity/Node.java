@@ -69,6 +69,8 @@ public class Node extends BaseNulsData {
 
     private Set<String> groupSet;
 
+    public static final int FAIL_COUNT = 20;
+
     /**
      * 1: inNode ,  2: outNode
      */

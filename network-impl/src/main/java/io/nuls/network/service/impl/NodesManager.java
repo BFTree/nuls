@@ -380,7 +380,7 @@ public class NodesManager implements Runnable {
                 System.out.println(node.toString());
             }
             System.out.println("-------------- end print connectedNodes ------------------");
-            System.out.println();
+            System.out.println("================\r");
 
             // check the connectedNodes, if it is empty, try to connect seed node,
             // if connectedNode's count enough, closing the connection with the seed node

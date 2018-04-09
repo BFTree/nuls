@@ -27,7 +27,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("---------------------- server channelRegistered ------------------------- " + nodeId);
+        Log.debug("---------------------- server channelRegistered ------------------------- " + nodeId);
         String remoteIP = channel.remoteAddress().getHostString();
 //        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
 //        Node node = getNetworkService().getNode(remoteId);
@@ -78,8 +78,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("---------------------- server channelActive ------------------------- " + nodeId);
-        Log.info("---------------------- server channelActive ------------------------- ");
+        Log.debug("---------------------- server channelActive ------------------------- " + nodeId);
         String channelId = ctx.channel().id().asLongText();
         //SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
@@ -91,7 +90,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.info("---------------------- server channelInactive ------------------------- ");
+        Log.debug("---------------------- server channelInactive ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);
@@ -104,14 +103,13 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
             } else {
                 System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
                 System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
-                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
             }
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Log.info("--------------- ServerChannelHandler exceptionCaught :" + cause.getMessage(), cause);
+        Log.debug("--------------- ServerChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

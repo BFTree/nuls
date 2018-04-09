@@ -30,7 +30,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("----------------------client channelActive ---------------------- " + nodeId);
+        Log.debug("----------------------client channelActive ---------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
 //        if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
@@ -63,18 +63,16 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        //Log.info("----------------------client channelInactive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("----------------------client channelInactive ---------------------- " + nodeId);
+        Log.debug("----------------------client channelInactive ------------------------- " + channelId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null) {
             if (node.getChannelId() == null || channelId.equals(node.getChannelId())) {
                 getNetworkService().removeNode(node.getId());
             } else {
-                System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
                 System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
                 System.out.println("---------------- client channelId different----------------" + channelId + "," + node.getChannelId());
             }
@@ -99,7 +97,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        Log.info("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
+        Log.debug("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

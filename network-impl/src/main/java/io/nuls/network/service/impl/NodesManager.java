@@ -225,6 +225,7 @@ public class NodesManager implements Runnable {
             for (String groupName : node.getGroupSet()) {
                 removeNodeFromGroup(groupName, node.getId());
             }
+
             //If it is a malicious node, or the node type is "IN",remove it at once
             /**
              * Because the port number is not reliable,
@@ -258,7 +259,7 @@ public class NodesManager implements Runnable {
                     disConnectNodes.remove(nodeId);
                 }
 
-            } else if (node.getFailCount() >= 20) {
+            } else if (node.getFailCount() >= 20 || node.getType() == Node.IN) {
                 if (disConnectNodes.containsKey(nodeId)) {
                     disConnectNodes.remove(nodeId);
                 }

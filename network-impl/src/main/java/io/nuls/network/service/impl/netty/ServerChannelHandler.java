@@ -93,8 +93,14 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         Node node = getNetworkService().getNode(nodeId);
-        if (node != null && channelId.equals(node.getChannelId())) {
-            getNetworkService().removeNode(nodeId);
+        if (node != null) {
+            if (channelId.equals(node.getChannelId())) {
+                getNetworkService().removeNode(nodeId);
+            } else {
+                System.out.println("--------------channel id different----------------------");
+                System.out.println(node.getChannelId());
+                System.out.println(channelId);
+            }
         }
     }
 

@@ -175,14 +175,18 @@ public class Node extends BaseNulsData {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
-        sb.append("ip: '" + getIp() + "',");
-        sb.append("port: " + getPort() + ",");
-        if (lastTime == null) {
-            lastTime = System.currentTimeMillis();
-        }
+//        sb.append("ip: '" + getIp() + "',");
+//        sb.append("port: " + getPort() + ",");
+        sb.append("id:" + getId() + ",");
+        sb.append("type:" + type + ",");
+        sb.append("status:" + status + "}");
 
-        sb.append("lastTime: " + DateUtil.convertDate(new Date(lastTime)) + ",");
-        sb.append("magicNumber: " + magicNumber + "}");
+//        if (lastTime == null) {
+//            lastTime = System.currentTimeMillis();
+//        }
+//
+//        sb.append("lastTime: " + DateUtil.convertDate(new Date(lastTime)) + ",");
+//        sb.append("magicNumber: " + magicNumber + "}");
         return sb.toString();
     }
 

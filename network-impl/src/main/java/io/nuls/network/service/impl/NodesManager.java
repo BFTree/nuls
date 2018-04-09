@@ -361,10 +361,25 @@ public class NodesManager implements Runnable {
 
         while (running) {
 
-            System.out.println("- print nodes:");
-            for (Node node : connectedNodes.values()) {
-                System.out.println(" ---------" + node.getId() + ",type:" + node.getType());
+            System.out.println("-------------- print disConnectNodes ------------------");
+            for (Node node : disConnectNodes.values()) {
+                System.out.println(node.toString());
             }
+            System.out.println("-------------- end print disConnectNodes ------------------");
+            System.out.println();
+
+            System.out.println("-------------- print canConnectNodes ------------------");
+            for (Node node : canConnectNodes.values()) {
+                System.out.println(node.toString());
+            }
+            System.out.println("-------------- end print canConnectNodes ------------------");
+            System.out.println();
+
+            System.out.println("-------------- print connectedNodes ------------------");
+            for (Node node : connectedNodes.values()) {
+                System.out.println(node.toString());
+            }
+            System.out.println("-------------- end print connectedNodes ------------------");
             System.out.println();
 
             // check the connectedNodes, if it is empty, try to connect seed node,

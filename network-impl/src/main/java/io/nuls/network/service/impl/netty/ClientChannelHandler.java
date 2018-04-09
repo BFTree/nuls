@@ -43,19 +43,25 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         for (Node n : nodes.values()) {
             //both ip and port equals , it means the node is myself
             if (n.getIp().equals(channel.remoteAddress().getHostString()) && n.getPort() != channel.remoteAddress().getPort()) {
-                Log.debug("----------------------client: it already had a connection: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
+                Log.info("----------------------client: it already had a connection: "+n.getId()+" type:"+n.getType()+", this connection: "+IpUtil.getNodeId(channel.remoteAddress())+"------------------------- ");
                 ctx.channel().close();
                 return;
             }
         }
-        NioChannelMap.add(channelId, channel);
-        node.setChannelId(channelId);
-        node.setStatus(Node.CONNECT);
+        try {
+            NioChannelMap.add(channelId, channel);
+            node.setChannelId(channelId);
+            node.setStatus(Node.CONNECT);
+        }catch (Exception e) {
+            System.out.println(nodeId);
+            e.printStackTrace();
+        }
+
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.debug("----------------------client channelInactive ------------------------- ");
+        Log.info("----------------------client channelInactive ------------------------- ");
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
@@ -86,7 +92,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        Log.debug("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
+        Log.info("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }
 

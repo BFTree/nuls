@@ -36,6 +36,7 @@ import io.nuls.db.entity.NodePo;
 import io.nuls.db.transactional.annotation.PROPAGATION;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Niels
@@ -43,6 +44,8 @@ import java.util.*;
  */
 @DbSession(transactional = PROPAGATION.NONE)
 public class NodeDaoImpl extends BaseDaoImpl<NodeMapper, String, NodePo> implements NodeDataService {
+    private ReentrantLock lock = new ReentrantLock();
+
     public NodeDaoImpl() {
         super(NodeMapper.class);
     }
@@ -65,6 +68,7 @@ public class NodeDaoImpl extends BaseDaoImpl<NodeMapper, String, NodePo> impleme
     @Override
     @DbSession
     public void saveChange(NodePo po) {
+        lock.lock();
         try {
             Searchable searchable = new Searchable();
             searchable.addCondition("id", SearchOperator.eq, po.getId());
@@ -75,28 +79,38 @@ public class NodeDaoImpl extends BaseDaoImpl<NodeMapper, String, NodePo> impleme
             }
         } catch (Exception e) {
             Log.error(e);
+        } finally {
+            lock.unlock();
         }
+
     }
 
     @Override
     @DbSession
     public void removeNode(NodePo po) {
-        NodePo nodePo = getMapper().selectByPrimaryKey(po.getId());
-        if (nodePo != null && nodePo.getStatus() == NodePo.BLACK) {
-            return;
-        }
-        if (nodePo != null) {
-            if (po.getStatus() == NodePo.BLACK || po.getFailCount() <= 1) {
-                getMapper().updateByPrimaryKey(po);
-            } else {
-                getMapper().deleteByPrimaryKey(po.getId());
+        lock.lock();
+        try {
+            NodePo nodePo = getMapper().selectByPrimaryKey(po.getId());
+            if (nodePo != null && nodePo.getStatus() == NodePo.BLACK) {
+                return;
             }
+            if (nodePo != null) {
+                if (po.getStatus() == NodePo.BLACK || po.getFailCount() <= 1) {
+                    getMapper().updateByPrimaryKey(po);
+                } else {
+                    getMapper().deleteByPrimaryKey(po.getId());
+                }
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
     @DbSession
     public void removeNode(String nodeId) {
+        lock.lock();
         getMapper().deleteByPrimaryKey(nodeId);
+        lock.unlock();
     }
 }

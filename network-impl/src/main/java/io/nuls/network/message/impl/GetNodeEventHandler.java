@@ -83,6 +83,7 @@ public class GetNodeEventHandler implements NetWorkEventHandler {
                 continue;
             }
             ipSet.add(node.getIp());
+            node.setPort(node.getSeverPort());
             nodes.add(node);
             if (nodes.size() == length) {
                 break;

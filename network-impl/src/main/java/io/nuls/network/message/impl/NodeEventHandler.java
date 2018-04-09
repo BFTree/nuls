@@ -75,6 +75,7 @@ public class NodeEventHandler implements NetWorkEventHandler {
             if (!exist) {
                 newNode.setType(Node.OUT);
                 newNode.setStatus(Node.CLOSE);
+                newNode.setId(null);
                 getNetworkService().addNode(newNode);
             }
         }

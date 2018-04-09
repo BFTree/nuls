@@ -328,6 +328,7 @@ public class NodesManager implements Runnable {
             if (node.getType() == Node.IN) {
                 node.setType(Node.OUT);
                 node.setPort(node.getSeverPort());
+                node.setId(null);
             }
             getNodeDao().saveChange(NodeTransferTool.toPojo(node));
             removeNode(node.getId());

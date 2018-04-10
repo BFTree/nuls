@@ -12,6 +12,7 @@ import io.nuls.core.utils.spring.lite.annotation.Autowired;
 import io.nuls.network.entity.Node;
 import io.nuls.network.service.NetworkService;
 
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
 /**
@@ -29,26 +30,27 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         Log.debug("---------------------- server channelRegistered ------------------------- " + nodeId);
         String remoteIP = channel.remoteAddress().getHostString();
-//        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
-//        Node node = getNetworkService().getNode(remoteId);
-//        if (node != null) {
-//            if (node.getStatus() == Node.CONNECT) {
-//                ctx.channel().close();
-//                return;
-//            }
-//            //When nodes try to connect to each other but not connected, select one of the smaller IP addresses as the server
-////            if (node.getType() == Node.OUT) {
-////                String localIP = InetAddress.getLocalHost().getHostAddress();
-////                boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
-////
-////                if (!isLocalServer) {
-////                    ctx.channel().close();
-////                    return;
-////                } else {
-////                    getNetworkService().removeNode(remoteId);
-////                }
-////            }
-//        } else {
+        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
+        Node node = getNetworkService().getNode(remoteId);
+        if (node != null) {
+            if (node.getStatus() == Node.CONNECT) {
+                ctx.channel().close();
+                return;
+            }
+            //When nodes try to connect to each other but not connected, select one of the smaller IP addresses as the server
+            if (node.getType() == Node.OUT) {
+                String localIP = InetAddress.getLocalHost().getHostAddress();
+                boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
+
+                if (!isLocalServer) {
+                    ctx.channel().close();
+                    return;
+                } else {
+                    getNetworkService().removeNode(remoteId);
+                    return;
+                }
+            }
+        }
         // if has a node with same ip, and it's a out node, close this channel
         // if More than 10 in nodes of the same IP, close this channel
         int count = 0;

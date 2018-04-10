@@ -44,8 +44,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
                     ctx.channel().close();
                     return;
                 } else {
-                    getNetworkService().removeNode(remoteId);
-                    return;
+                    getNetworkService().removeNode(node.getId());
                 }
             }
         }

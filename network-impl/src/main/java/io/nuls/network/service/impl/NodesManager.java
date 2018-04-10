@@ -380,7 +380,7 @@ public class NodesManager implements Runnable {
         int c = 0;
         while (running) {
             c++;
-            if (c == 5) {
+            if (c == 8) {
                 for (Node node : connectedNodes.values()) {
                     System.out.println(node.toString());
                 }

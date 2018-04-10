@@ -9,7 +9,9 @@ import io.nuls.core.context.NulsContext;
 import io.nuls.core.utils.log.Log;
 import io.nuls.core.utils.network.IpUtil;
 import io.nuls.core.utils.spring.lite.annotation.Autowired;
+import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.entity.Node;
+import io.nuls.network.entity.NodeGroup;
 import io.nuls.network.service.NetworkService;
 
 import java.net.InetAddress;
@@ -31,14 +33,10 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
         Log.debug("---------------------- server channelRegistered ------------------------- " + nodeId);
         String remoteIP = channel.remoteAddress().getHostString();
         String remoteId = IpUtil.getNodeId(channel.remoteAddress());
-        Node node = getNetworkService().getNode(remoteId);
-        if (node != null) {
-            if (node.getStatus() == Node.CONNECT) {
-                ctx.channel().close();
-                return;
-            }
-            //When nodes try to connect to each other but not connected, select one of the smaller IP addresses as the server
-            if (node.getType() == Node.OUT) {
+
+        NodeGroup outGroup = networkService.getNodeGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP);
+        for(Node node : outGroup.getNodes().values()) {
+            if(node.getIp().equals(remoteIP)) {
                 String localIP = InetAddress.getLocalHost().getHostAddress();
                 boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
 

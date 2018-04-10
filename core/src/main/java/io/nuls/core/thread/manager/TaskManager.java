@@ -42,6 +42,10 @@ public class TaskManager {
     private static final int TEMPORARY_THREAD_POOL_QUEUE_SIZE = 1000;
     private static final ThreadPoolExecutor TEMPORARY_THREAD_POOL;
 
+    public static ThreadPoolExecutor get() {
+        return TEMPORARY_THREAD_POOL;
+    }
+
     /**
      * Initializing a temporary thread pool
      */
@@ -93,6 +97,10 @@ public class TaskManager {
         }
         if (TEMPORARY_THREAD_POOL == null) {
             throw new RuntimeException("temporary thread pool not initialized yet");
+        }
+        BlockingQueue<Runnable> queue = TEMPORARY_THREAD_POOL.getQueue();
+        if(queue.size() > 50) {
+            System.out.println("Queue size > 50 warning!!!");
         }
         TEMPORARY_THREAD_POOL.execute(runnable);
     }

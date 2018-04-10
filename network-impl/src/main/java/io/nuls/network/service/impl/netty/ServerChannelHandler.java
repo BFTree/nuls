@@ -30,13 +30,12 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        Log.debug("---------------------- server channelRegistered ------------------------- " + nodeId);
+//        Log.info("---------------------- server channelRegistered ------------------------- " + nodeId);
         String remoteIP = channel.remoteAddress().getHostString();
-        String remoteId = IpUtil.getNodeId(channel.remoteAddress());
 
         NodeGroup outGroup = networkService.getNodeGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP);
-        for(Node node : outGroup.getNodes().values()) {
-            if(node.getIp().equals(remoteIP)) {
+        for (Node node : outGroup.getNodes().values()) {
+            if (node.getIp().equals(remoteIP)) {
                 String localIP = InetAddress.getLocalHost().getHostAddress();
                 boolean isLocalServer = IpUtil.judgeIsLocalServer(localIP, remoteIP);
 
@@ -77,7 +76,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        Log.debug("---------------------- server channelActive ------------------------- " + nodeId);
+        Log.info("---------------------- server Active ------------------------- " + nodeId);
         String channelId = ctx.channel().id().asLongText();
         //SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.add(channelId, channel);
@@ -89,19 +88,15 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Log.debug("---------------------- server channelInactive ------------------------- ");
         SocketChannel channel = (SocketChannel) ctx.channel();
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println("---------------------- server channelInactive ------------------------- " + nodeId);
+        Log.info("---------------------- server remove ------------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null) {
             if (channelId.equals(node.getChannelId())) {
                 getNetworkService().removeNode(nodeId);
-            } else {
-                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
-                System.out.println("--------------sever channel id different----------------------" + channelId + "," + node.getChannelId());
             }
         }
     }

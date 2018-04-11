@@ -78,11 +78,9 @@ public class GetVersionEventHandler implements NetWorkEventHandler {
                 Log.error(e);
             }
         }
-        Random random = new Random();
-        int height = random.nextInt(1000);
 
         VersionEvent replyMessage = new VersionEvent(getNetworkService().getNetworkParam().port(),
-                height, block.getHeader().getHash().getDigestHex());
+                block.getHeader().getHeight(), block.getHeader().getHash().getDigestHex());
 
         node.setSeverPort(event.getSeverPort());
         return new NetworkEventResult(true, replyMessage);

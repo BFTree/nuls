@@ -99,8 +99,8 @@ public class TaskManager {
             throw new RuntimeException("temporary thread pool not initialized yet");
         }
         BlockingQueue<Runnable> queue = TEMPORARY_THREAD_POOL.getQueue();
-        if(queue.size() > 50) {
-            System.out.println("Queue size > 50 warning!!!");
+        if(queue.size() > 100) {
+            System.out.println("Queue size > 100 warning!!!");
         }
         TEMPORARY_THREAD_POOL.execute(runnable);
     }

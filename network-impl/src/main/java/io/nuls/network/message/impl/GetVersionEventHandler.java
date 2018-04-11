@@ -35,6 +35,8 @@ import io.nuls.network.message.entity.VersionEvent;
 import io.nuls.network.message.handler.NetWorkEventHandler;
 import io.nuls.network.service.NetworkService;
 
+import java.util.Random;
+
 /**
  * @author vivi
  * @date 2017/11/24.
@@ -76,9 +78,11 @@ public class GetVersionEventHandler implements NetWorkEventHandler {
                 Log.error(e);
             }
         }
+        Random random = new Random();
+        int height = random.nextInt(1000);
 
         VersionEvent replyMessage = new VersionEvent(getNetworkService().getNetworkParam().port(),
-                block.getHeader().getHeight(), block.getHeader().getHash().getDigestHex());
+                height, block.getHeader().getHash().getDigestHex());
 
         node.setSeverPort(event.getSeverPort());
         return new NetworkEventResult(true, replyMessage);

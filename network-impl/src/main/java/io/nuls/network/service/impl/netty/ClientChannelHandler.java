@@ -30,7 +30,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         String channelId = ctx.channel().id().asLongText();
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        Log.debug("----------------------client channelActive ---------------------- " + nodeId);
+        System.out.println("----------------------client channelActive ---------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         //check node exist
 //        if (node == null || (node != null && node.getStatus() != Node.WAIT)) {
@@ -67,7 +67,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         SocketChannel channel = (SocketChannel) ctx.channel();
         NioChannelMap.remove(channelId);
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        Log.debug("----------------------client channelInactive ------------------------- " + channelId);
+        System.out.println("----------------------client channelInactive ------------------------- " + channelId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null) {
             if (node.getChannelId() == null || channelId.equals(node.getChannelId())) {
@@ -97,6 +97,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        System.out.println("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage());
         Log.debug("--------------- ClientChannelHandler exceptionCaught :" + cause.getMessage(), cause);
         ctx.channel().close();
     }

@@ -126,7 +126,9 @@ public class ConnectionManager {
                     if (node.getMagicNumber() == 0) {
                         node.setMagicNumber(header.getMagicNumber());
                     }
+
                     BaseEvent event = EventManager.getInstance(message.getData());
+                    System.out.println("------------receiveMessage:{moduleId:" + event.getHeader().getModuleId() + ",eventType:" + event.getHeader().getEventType() + "}");
                     processMessage(event, node);
                 } else {
                     node.setStatus(Node.BAD);

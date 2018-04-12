@@ -56,6 +56,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         System.out.println(" ---------------------- client channelActive ----------" + nodeId);
+        System.out.println("localInfo: "+channel.localAddress().getHostString()+":" + channel.localAddress().getPort());
 
         Attribute<Node> nodeAttribute = channel.attr(key);
         Node node = nodeAttribute.get();
@@ -77,6 +78,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
         System.out.println(" ---------------------- client channelInactive ---------------------- " + nodeId);
+        System.out.println("localInfo: "+channel.localAddress().getHostString()+":" + channel.localAddress().getPort());
 
         String channelId = ctx.channel().id().asLongText();
         NioChannelMap.remove(channelId);

@@ -45,6 +45,7 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         }
 
         // 握手失败，关闭连接
+        System.out.println("----------handlenl;ka;23;j32j--------------" + handshakeEvent.getHandshakeType());
         if (!isSuccess) {
             System.out.println("握手失败，关闭连接");
             socketChannel.close();
@@ -52,9 +53,9 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         }
         if (!isServer) {
             handshakeEvent = new HandshakeEvent(NetworkConstant.HANDSHAKE_CLIENT_TYPE);
-
+            return new NetworkEventResult(true, handshakeEvent);
         }
-        return new NetworkEventResult(true, handshakeEvent);
+        return null;
     }
 
     private NetworkService getNetworkService() {

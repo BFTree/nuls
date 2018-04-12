@@ -107,7 +107,6 @@ public class ConnectionManager {
     }
 
 
-
     public void receiveMessage(ByteBuffer buffer, Node node) {
         List<NulsMessage> list;
         try {
@@ -196,11 +195,8 @@ public class ConnectionManager {
     }
 
     private boolean isHandShakeMessage(BaseEvent event) {
-        if (isNetworkEvent(event)) {
-            if (event.getHeader().getEventType() == NetworkConstant.NETWORK_GET_VERSION_EVENT
-                    || event.getHeader().getEventType() == NetworkConstant.NETWORK_VERSION_EVENT) {
-                return true;
-            }
+        if (isNetworkEvent(event) && event.getHeader().getEventType() == NetworkConstant.NETWORK_HANDSHAKE_EVENT) {
+            return true;
         }
         return false;
     }

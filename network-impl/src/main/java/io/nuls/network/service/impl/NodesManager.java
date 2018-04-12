@@ -330,7 +330,7 @@ public class NodesManager implements Runnable {
     }
 
     private void getNodeFromOther(int size) {
-
+        discoverHandler.findOtherNode(size);
     }
 
     /**

@@ -38,9 +38,9 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         boolean isSuccess = false;
 
         if (handshakeEvent.getHandshakeType() == NetworkConstant.HANDSHAKE_SEVER_TYPE) {
-            isServer = true;
             isSuccess = getNetworkService().handshakeNode(NetworkConstant.NETWORK_NODE_OUT_GROUP, node);
         } else {
+            isServer = true;
             isSuccess = getNetworkService().handshakeNode(NetworkConstant.NETWORK_NODE_IN_GROUP, node);
         }
 

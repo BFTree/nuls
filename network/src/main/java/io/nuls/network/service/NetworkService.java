@@ -50,6 +50,8 @@ public interface NetworkService {
 
     void removeNode(String nodeId, int type);
 
+    void deleteNode(String nodeId);
+
     Map<String, Node> getNodes();
 
     Node getNode(String nodeId);
@@ -60,11 +62,13 @@ public interface NetworkService {
 
     boolean addNode(Node node);
 
+    boolean addConnNode(Node node);
+
     boolean isSeedNode(String ip);
 
     boolean isSeed();
 
-    void handshakeNode(Node node);
+    boolean handshakeNode(String groupName, Node node);
 
     void blackNode(String nodeId, int status);
 

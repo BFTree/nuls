@@ -103,8 +103,10 @@ public class ConnectionManager {
                 NettyClient client = new NettyClient(node);
                 client.start();
             }
-        }, false);
+        }, true);
     }
+
+
 
     public void receiveMessage(ByteBuffer buffer, Node node) {
         List<NulsMessage> list;

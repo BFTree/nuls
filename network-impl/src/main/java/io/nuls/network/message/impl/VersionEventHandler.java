@@ -29,7 +29,6 @@ import io.nuls.core.event.BaseEvent;
 import io.nuls.core.utils.date.TimeService;
 import io.nuls.db.dao.NodeDataService;
 import io.nuls.network.entity.Node;
-import io.nuls.network.entity.NodeTransferTool;
 import io.nuls.network.exception.NetworkMessageException;
 import io.nuls.network.message.NetworkCacheService;
 import io.nuls.network.message.NetworkEventResult;

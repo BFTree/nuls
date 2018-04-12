@@ -94,7 +94,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws UnsupportedEncodingException {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
-        System.out.println(" ---------------------- client channelRead ---------------------- " + nodeId);
+//        System.out.println(" ---------------------- client channelRead ---------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null && node.isAlive()) {
             ByteBuf buf = (ByteBuf) msg;

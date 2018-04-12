@@ -128,7 +128,6 @@ public class ConnectionManager {
                     }
 
                     BaseEvent event = EventManager.getInstance(message.getData());
-                    System.out.println("------------receiveMessage:{moduleId:" + event.getHeader().getModuleId() + ",eventType:" + event.getHeader().getEventType() + "}");
                     processMessage(event, node);
                 } else {
                     node.setStatus(Node.BAD);

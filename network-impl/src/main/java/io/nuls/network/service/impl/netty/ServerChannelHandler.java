@@ -121,6 +121,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         SocketChannel channel = (SocketChannel) ctx.channel();
         String nodeId = IpUtil.getNodeId(channel.remoteAddress());
+        System.out.println(" ---------------------- server channelRead ------------------------- " + nodeId);
         Node node = getNetworkService().getNode(nodeId);
         if (node != null && node.isAlive()) {
             ByteBuf buf = (ByteBuf) msg;

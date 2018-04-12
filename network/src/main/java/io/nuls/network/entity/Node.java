@@ -99,6 +99,9 @@ public class Node extends BaseNulsData {
         this();
         this.ip = ip;
         this.port = port;
+        if (type == Node.OUT) {
+            this.severPort = port;
+        }
         this.type = type;
     }
 

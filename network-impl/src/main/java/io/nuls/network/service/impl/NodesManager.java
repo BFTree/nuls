@@ -436,7 +436,7 @@ public class NodesManager implements Runnable {
             }
             System.out.println();
             System.out.println("handShakeNodes:");
-            for (Node node : connectedNodes.values()) {
+            for (Node node : handShakeNodes.values()) {
                 System.out.println(node.toString());
             }
 

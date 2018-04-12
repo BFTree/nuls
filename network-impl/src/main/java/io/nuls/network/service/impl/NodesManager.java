@@ -438,6 +438,9 @@ public class NodesManager implements Runnable {
             System.out.println("handShakeNodes:");
             for (Node node : handShakeNodes.values()) {
                 System.out.println(node.toString());
+                if(node.getVersionMessage() != null) {
+                    System.out.println("-----height:" + node.getVersionMessage().getBestBlockHeight());
+                }
             }
 
             if (connectedNodes.isEmpty() && handShakeNodes.isEmpty()) {

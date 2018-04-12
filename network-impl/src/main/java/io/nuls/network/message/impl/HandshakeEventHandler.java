@@ -45,7 +45,7 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         }
 
         // 握手失败，关闭连接
-        System.out.println("----------handlenl;ka;23;j32j--------------" + handshakeEvent.getHandshakeType());
+        System.out.println("----------handshakeEvent handler--------------node:" + node.getId() + ",type:" + handshakeEvent.getHandshakeType());
         if (!isSuccess) {
             System.out.println("握手失败，关闭连接");
             socketChannel.close();

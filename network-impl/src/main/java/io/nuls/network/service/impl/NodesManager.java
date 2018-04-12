@@ -421,25 +421,29 @@ public class NodesManager implements Runnable {
     /**
      * check the nodes when closed try to connect other one
      */
+
+    int count = 0;
+
     @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         while (running) {
-            System.out.println("disConnectNodes:");
-            for (Node node : disConnectNodes.values()) {
-                System.out.println(node.toString());
-            }
-            System.out.println();
-            System.out.println("connectedNodes:");
-            for (Node node : connectedNodes.values()) {
-                System.out.println(node.toString());
-            }
-            System.out.println();
-            System.out.println("handShakeNodes:");
-            for (Node node : handShakeNodes.values()) {
-                System.out.println(node.toString());
-                if(node.getVersionMessage() != null) {
-                    System.out.println("-----height:" + node.getVersionMessage().getBestBlockHeight());
+            count++;
+            if (count == 20) {
+                count = 0;
+                System.out.println("disConnectNodes:");
+                for (Node node : disConnectNodes.values()) {
+                    System.out.println(node.toString());
+                }
+                System.out.println();
+                System.out.println("connectedNodes:");
+                for (Node node : connectedNodes.values()) {
+                    System.out.println(node.toString());
+                }
+                System.out.println();
+                System.out.println("handShakeNodes:");
+                for (Node node : handShakeNodes.values()) {
+                    System.out.println(node.toString());
                 }
             }
 

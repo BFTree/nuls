@@ -52,9 +52,9 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         }
         if (isServer) {
             handshakeEvent = new HandshakeEvent(NetworkConstant.HANDSHAKE_CLIENT_TYPE);
-            getNetworkService().sendToNode(handshakeEvent, node.getId(), false);
+
         }
-        return null;
+        return new NetworkEventResult(true, handshakeEvent);
     }
 
     private NetworkService getNetworkService() {

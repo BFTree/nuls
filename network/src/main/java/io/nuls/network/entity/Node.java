@@ -55,7 +55,7 @@ public class Node extends BaseNulsData {
 
     private Integer port;
 
-    private Integer severPort;
+    private Integer severPort = 0;
 
     private int magicNumber;
 

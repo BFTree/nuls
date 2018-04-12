@@ -50,7 +50,7 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
             socketChannel.close();
             return null;
         }
-        if (isServer) {
+        if (!isServer) {
             handshakeEvent = new HandshakeEvent(NetworkConstant.HANDSHAKE_CLIENT_TYPE);
 
         }

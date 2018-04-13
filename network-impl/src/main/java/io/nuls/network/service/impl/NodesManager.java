@@ -28,9 +28,11 @@ import io.nuls.consensus.constant.PocConsensusConstant;
 import io.nuls.core.constant.NulsConstant;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.thread.manager.TaskManager;
+import io.nuls.core.utils.log.Log;
 import io.nuls.core.utils.network.IpUtil;
 import io.nuls.core.utils.str.StringUtils;
 import io.nuls.db.dao.NodeDataService;
+import io.nuls.db.entity.NodePo;
 import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.entity.Node;
 import io.nuls.network.entity.NodeGroup;
@@ -131,6 +133,16 @@ public class NodesManager implements Runnable {
         discoverHandler.start();
     }
 
+    public void reset() {
+        System.out.println("------------------nodeManager reset--------------------");
+        for (Node node : disConnectNodes.values()) {
+            node.setFailCount(NetworkConstant.FAIL_MAX_COUNT);
+        }
+        for (Node node : handShakeNodes.values()) {
+            removeNode(node);
+        }
+    }
+
 
     public boolean addNode(Node node) {
         if (IpUtil.getIps().contains(node.getIp())) {
@@ -159,7 +171,6 @@ public class NodesManager implements Runnable {
     public boolean addConnNode(Node node) {
         lock.lock();
         try {
-            System.out.println("addConnNode: " + node.toString());
             if (!connectedNodes.containsKey(node.getId()) && !handShakeNodes.containsKey(node.getId())) {
                 disConnectNodes.remove(node.getId());
                 connectedNodes.put(node.getId(), node);
@@ -325,18 +336,22 @@ public class NodesManager implements Runnable {
     }
 
 
-    private int getNodeFromDataBase(int size) {
-        return 0;
+    private void getNodeFromDataBase(int size) {
+        Set<String> ipSet = new HashSet<>();
+        for (Node node : getNodes().values()) {
+            ipSet.add(node.getIp());
+        }
+        List<Node> nodes = discoverHandler.getLocalNodes(size, ipSet);
+        for (Node node : nodes) {
+            addNode(node);
+        }
     }
 
     private void getNodeFromOther(int size) {
         discoverHandler.findOtherNode(size);
     }
 
-    /**
-     * @param node
-     * @return
-     */
+
     public boolean handshakeNode(String groupName, Node node) {
         lock.lock();
         try {
@@ -356,10 +371,6 @@ public class NodesManager implements Runnable {
         }
     }
 
-    /**
-     * @param node
-     * @return
-     */
     private boolean checkFullHandShake(Node node) {
         if (node.getType() == Node.IN) {
             NodeGroup inGroup = getNodeGroup(NetworkConstant.NETWORK_NODE_IN_GROUP);
@@ -369,11 +380,6 @@ public class NodesManager implements Runnable {
             return outGroup.size() < network.maxOutCount();
         }
     }
-
-    /**
-     * -------------------------------华丽的分割线---------------------------
-     */
-
 
     public List<Node> getAvailableNodes() {
         return new ArrayList<>(handShakeNodes.values());
@@ -429,7 +435,7 @@ public class NodesManager implements Runnable {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         while (running) {
             count++;
-            if (count == 20) {
+            if (count == 2) {
                 count = 0;
                 System.out.println("disConnectNodes:");
                 for (Node node : disConnectNodes.values()) {
@@ -443,11 +449,11 @@ public class NodesManager implements Runnable {
                 System.out.println();
                 System.out.println("handShakeNodes:");
                 for (Node node : handShakeNodes.values()) {
-                    System.out.println(node.toString());
+                    Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
                 }
             }
 
-            if (connectedNodes.isEmpty() && handShakeNodes.isEmpty()) {
+            if (connectedNodes.isEmpty() && handShakeNodes.size() <= 2) {
                 List<Node> seedNodes = getSeedNodes();
                 for (Node node : seedNodes) {
                     addNode(node);
@@ -472,7 +478,7 @@ public class NodesManager implements Runnable {
             }
 
             try {
-                Thread.sleep(6000);
+                Thread.sleep(12000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -482,7 +488,9 @@ public class NodesManager implements Runnable {
     private void removeSeedNode() {
         Collection<Node> nodes = connectedNodes.values();
         int count = 0;
-        for (String ip : network.getSeedIpList()) {
+        List<String> seedIpList = network.getSeedIpList();
+        Collections.shuffle(seedIpList);
+        for (String ip : seedIpList) {
             for (Node n : nodes) {
                 if (n.getIp().equals(ip)) {
                     count++;

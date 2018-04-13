@@ -96,4 +96,6 @@ public interface NetworkService {
 
     void receiveMessage(ByteBuffer buffer, Node node);
 
+    void reset();
+
 }

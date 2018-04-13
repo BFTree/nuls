@@ -1,12 +1,15 @@
 package io.nuls.network.message.impl;
 
 import io.netty.channel.socket.SocketChannel;
+import io.nuls.core.chain.entity.Block;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.event.BaseEvent;
+import io.nuls.core.utils.log.Log;
 import io.nuls.network.constant.NetworkConstant;
 import io.nuls.network.entity.Node;
 import io.nuls.network.message.NetworkEventResult;
 import io.nuls.network.message.entity.HandshakeEvent;
+import io.nuls.network.message.entity.VersionEvent;
 import io.nuls.network.message.handler.NetWorkEventHandler;
 import io.nuls.network.service.NetworkService;
 import io.nuls.network.service.impl.netty.NioChannelMap;
@@ -44,16 +47,24 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
             isSuccess = getNetworkService().handshakeNode(NetworkConstant.NETWORK_NODE_IN_GROUP, node);
         }
 
-        // 握手失败，关闭连接
-        System.out.println("----------handshakeEvent handler--------------node:" + node.getId() + ",type:" + handshakeEvent.getHandshakeType());
         if (!isSuccess) {
-            System.out.println("localInfo: "+socketChannel.localAddress().getHostString()+":" + socketChannel.localAddress().getPort());
-            System.out.println("握手失败，关闭连接");
-            socketChannel.close();
-            return null;
+            if (socketChannel != null) {
+                Log.debug("localInfo: " + socketChannel.localAddress().getHostString() + ":" + socketChannel.localAddress().getPort());
+                Log.debug("handshake failed, close the connetion.");
+
+                socketChannel.close();
+                return null;
+            }
         }
+
+        node.setSeverPort(handshakeEvent.getSeverPort());
+        VersionEvent versionEvent = new VersionEvent(handshakeEvent.getSeverPort(), handshakeEvent.getBestBlockHeight(), handshakeEvent.getBestBlockHash());
+        node.setVersionMessage(versionEvent);
+
         if (!isServer) {
-            handshakeEvent = new HandshakeEvent(NetworkConstant.HANDSHAKE_CLIENT_TYPE);
+            Block bestBlock = NulsContext.getInstance().getBestBlock();
+            handshakeEvent = new HandshakeEvent(NetworkConstant.HANDSHAKE_CLIENT_TYPE, getNetworkService().getNetworkParam().port(),
+                    bestBlock.getHeader().getHeight(), bestBlock.getHeader().getHash().getDigestHex());
             return new NetworkEventResult(true, handshakeEvent);
         }
         return null;

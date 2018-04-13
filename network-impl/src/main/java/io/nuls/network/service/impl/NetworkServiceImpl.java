@@ -261,6 +261,11 @@ public class NetworkServiceImpl implements NetworkService {
         connectionManager.receiveMessage(buffer, node);
     }
 
+    @Override
+    public void reset() {
+        nodesManager.reset();
+    }
+
     private AbstractNetworkParam getNetworkInstance() {
         String networkType = NetworkContext.getNetworkConfig().getPropValue(NetworkConstant.NETWORK_TYPE, "dev");
         if ("dev".equals(networkType)) {

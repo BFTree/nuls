@@ -44,10 +44,8 @@ public class DevNetworkParam extends AbstractNetworkParam {
         this.port = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_SERVER_PORT, 8003);
         this.packetMagic = NulsContext.MODULES_CONFIG.getCfgValue(NetworkConstant.NETWORK_SECTION, NetworkConstant.NETWORK_MAGIC, 123456789);
 
-        seedIpList.add("192.168.1.103");
-        seedIpList.add("192.168.1.102");
-        seedIpList.add("192.168.1.201");
-        seedIpList.add("192.168.1.233");
+        seedIpList.add("192.168.1.131");
+        seedIpList.add("192.168.1.203");
 
         this.messageFilter = DefaultMessageFilter.getInstance();
         this.messageHandlerFactory = DefaultNetWorkEventHandlerFactory.getInstance();

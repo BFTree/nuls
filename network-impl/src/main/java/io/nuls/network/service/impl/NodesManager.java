@@ -38,6 +38,7 @@ import io.nuls.network.entity.Node;
 import io.nuls.network.entity.NodeGroup;
 import io.nuls.network.entity.NodeTransferTool;
 import io.nuls.network.entity.param.AbstractNetworkParam;
+import io.nuls.network.message.entity.VersionEvent;
 import io.nuls.network.service.impl.netty.NioChannelMap;
 
 import java.util.*;
@@ -367,7 +368,7 @@ public class NodesManager implements Runnable {
     }
 
 
-    public boolean handshakeNode(String groupName, Node node) {
+    public boolean handshakeNode(String groupName, Node node, VersionEvent versionEvent) {
         lock.lock();
         try {
             if (!checkFullHandShake(node)) {
@@ -376,10 +377,11 @@ public class NodesManager implements Runnable {
             if (!connectedNodes.containsKey(node.getId())) {
                 return false;
             }
-            connectedNodes.remove(node.getId());
             node.setStatus(Node.HANDSHAKE);
-            handShakeNodes.put(node.getId(), node);
+            node.setVersionMessage(versionEvent);
 
+            connectedNodes.remove(node.getId());
+            handShakeNodes.put(node.getId(), node);
             return addNodeToGroup(groupName, node);
         } finally {
             lock.unlock();

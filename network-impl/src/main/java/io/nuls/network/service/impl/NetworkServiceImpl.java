@@ -38,6 +38,7 @@ import io.nuls.network.entity.Node;
 import io.nuls.network.entity.NodeGroup;
 import io.nuls.network.entity.param.AbstractNetworkParam;
 import io.nuls.network.filter.impl.DefaultMessageFilter;
+import io.nuls.network.message.entity.VersionEvent;
 import io.nuls.network.message.filter.MessageFilterChain;
 import io.nuls.network.message.filter.NulsMessageFilter;
 import io.nuls.network.param.DevNetworkParam;
@@ -194,8 +195,8 @@ public class NetworkServiceImpl implements NetworkService {
     }
 
     @Override
-    public boolean handshakeNode(String groupName, Node node) {
-        return nodesManager.handshakeNode(groupName, node);
+    public boolean handshakeNode(String groupName, Node node, VersionEvent versionEvent) {
+        return nodesManager.handshakeNode(groupName, node, versionEvent);
     }
 
     @Override

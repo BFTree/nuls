@@ -184,9 +184,7 @@ public class NetworkServiceImpl implements NetworkService {
 
     @Override
     public void saveNode(Node node) {
-        if (!isSeedNode(node.getIp())) {
-            nodesManager.saveNode(node);
-        }
+        nodesManager.saveNode(node);
     }
 
     @Override

@@ -87,9 +87,9 @@
     </appender>
 
     <!-- 日志输出级别 -->
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
+        <!--<appender-ref ref="FILE"/>-->
     </root>
     <logger name="org.apache.ibatis" level="debug" additivity="false"/>
     <logger name="org.ehcache" level="info" additivity="false"/>

@@ -220,6 +220,11 @@ public class NodesManager implements Runnable {
         return node;
     }
 
+    public Node getHandshakeNode(String nodeId) {
+        Node node = handShakeNodes.get(nodeId);
+        return node;
+    }
+
     public Map<String, Node> getNodes() {
         Map<String, Node> nodeMap = new HashMap<>();
         nodeMap.putAll(disConnectNodes);
@@ -246,6 +251,16 @@ public class NodesManager implements Runnable {
             removeNode(node);
         } else {
             System.out.println("------------remove node is null-----------" + nodeId);
+            getNodeDao().removeNode(nodeId);
+        }
+    }
+
+    public void removeHandshakeNode(String nodeId) {
+        Node node = getHandshakeNode(nodeId);
+        if (node != null) {
+            removeNode(node);
+        } else {
+            System.out.println("------------removeHandshakeNode node is null-----------" + nodeId);
             getNodeDao().removeNode(nodeId);
         }
     }

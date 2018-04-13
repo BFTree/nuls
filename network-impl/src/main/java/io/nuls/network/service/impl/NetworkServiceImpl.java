@@ -126,12 +126,14 @@ public class NetworkServiceImpl implements NetworkService {
 
     @Override
     public void removeNode(String nodeId) {
+        System.out.println("----------remove node------------");
         nodesManager.removeNode(nodeId);
     }
 
     @Override
     public void removeNode(String nodeId, int type) {
-        nodesManager.removeNode(nodeId);
+        System.out.println("----------removeHandshakeNode node------------");
+        nodesManager.removeHandshakeNode(nodeId);
     }
 
     @Override

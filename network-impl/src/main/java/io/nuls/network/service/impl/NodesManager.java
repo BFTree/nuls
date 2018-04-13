@@ -121,7 +121,7 @@ public class NodesManager implements Runnable {
     }
 
     public void reset() {
-        System.out.println("------------------network nodeManager reset--------------------");
+        Log.info("------------------network nodeManager reset--------------------");
         for (Node node : disConnectNodes.values()) {
             node.setFailCount(NetworkConstant.FAIL_MAX_COUNT);
         }
@@ -132,14 +132,12 @@ public class NodesManager implements Runnable {
 
 
     public boolean addNode(Node node) {
-        System.out.println("---------------add node-------------------" + node.getId());
         if (IpUtil.getIps().contains(node.getIp())) {
             return false;
         }
         lock.lock();
         try {
             if (outNodeIdSet.contains(node.getId())) {
-                System.out.println("---------------add node outNodeIdSet exsit-------------------" + node.getId());
                 return false;
             }
             if (!disConnectNodes.containsKey(node.getId()) &&
@@ -151,7 +149,6 @@ public class NodesManager implements Runnable {
                         return false;
                     }
                 }
-                System.out.println("---------------add node success-------------------" + node.getId());
                 outNodeIdSet.add(node.getId());
                 connectionManager.connectionNode(node);
                 return true;
@@ -258,7 +255,7 @@ public class NodesManager implements Runnable {
         if (node != null) {
             removeNode(node);
         } else {
-            System.out.println("------------remove node is null-----------" + nodeId);
+            Log.info("------------remove node is null-----------" + nodeId);
             getNodeDao().removeNode(nodeId);
             outNodeIdSet.remove(nodeId);
         }
@@ -269,7 +266,7 @@ public class NodesManager implements Runnable {
         if (node != null) {
             removeNode(node);
         } else {
-            System.out.println("------------removeHandshakeNode node is null-----------" + nodeId);
+            Log.info("------------removeHandshakeNode node is null-----------" + nodeId);
             outNodeIdSet.remove(node.getId());
             getNodeDao().removeNode(nodeId);
         }
@@ -464,17 +461,9 @@ public class NodesManager implements Runnable {
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         while (running) {
-            System.out.println("disConnectNodes:");
-            for (Node node : disConnectNodes.values()) {
-                System.out.println(node.toString());
-            }
-            System.out.println();
-            System.out.println("connectedNodes:");
-            for (Node node : connectedNodes.values()) {
-                System.out.println(node.toString());
-            }
-            System.out.println();
-            System.out.println("handShakeNodes:");
+            Log.info("disConnectNodes:" + disConnectNodes.size());
+            Log.info("disConnectNodes:" + connectedNodes.size());
+            Log.info("handShakeNodes:" + handShakeNodes.size());
             for (Node node : handShakeNodes.values()) {
                 Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
             }

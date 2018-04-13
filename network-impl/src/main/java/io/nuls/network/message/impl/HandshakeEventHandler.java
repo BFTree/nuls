@@ -41,8 +41,6 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
         boolean isSuccess = false;
 
         VersionEvent versionEvent = new VersionEvent(handshakeEvent.getSeverPort(), handshakeEvent.getBestBlockHeight(), handshakeEvent.getBestBlockHash());
-
-
         if (handshakeEvent.getHandshakeType() == NetworkConstant.HANDSHAKE_SEVER_TYPE) {
             isSuccess = getNetworkService().handshakeNode(NetworkConstant.NETWORK_NODE_OUT_GROUP, node, versionEvent);
         } else {
@@ -62,9 +60,7 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
 
         node.setFailCount(0);
         node.setSeverPort(handshakeEvent.getSeverPort());
-
         getNetworkService().saveNode(node);
-
 
         if (!isServer) {
             Block bestBlock = NulsContext.getInstance().getBestBlock();

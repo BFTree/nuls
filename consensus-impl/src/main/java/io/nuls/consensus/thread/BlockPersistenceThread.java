@@ -24,19 +24,20 @@
 package io.nuls.consensus.thread;
 
 import io.nuls.consensus.cache.manager.tx.ConfirmingTxCacheManager;
+import io.nuls.consensus.constant.DownloadStatus;
+import io.nuls.consensus.constant.MaintenanceStatus;
 import io.nuls.consensus.manager.BlockManager;
 import io.nuls.consensus.manager.ConsensusManager;
 import io.nuls.consensus.service.intf.BlockService;
-import io.nuls.consensus.utils.BlockBatchDownloadUtils;
+import io.nuls.consensus.service.intf.DownloadService;
 import io.nuls.core.chain.entity.Block;
+import io.nuls.core.constant.ErrorCode;
 import io.nuls.core.context.NulsContext;
+import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.utils.log.Log;
-import io.nuls.network.entity.Node;
 import io.nuls.network.service.NetworkService;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Niels
@@ -47,8 +48,8 @@ public class BlockPersistenceThread implements Runnable {
     private static final BlockPersistenceThread INSTANCE = new BlockPersistenceThread();
     private BlockManager blockManager = BlockManager.getInstance();
     private BlockService blockService = NulsContext.getServiceBean(BlockService.class);
+    private DownloadService downloadService  = NulsContext.getServiceBean(DownloadService.class);
     private ConfirmingTxCacheManager txCacheManager = ConfirmingTxCacheManager.getInstance();
-    private NetworkService networkService = NulsContext.getServiceBean(NetworkService.class);
     private boolean running;
 
     private BlockPersistenceThread() {
@@ -71,10 +72,10 @@ public class BlockPersistenceThread implements Runnable {
                     height = blockService.getLocalSavedHeight() + 1;
                 }
                 boolean success = blockManager.processingBifurcation(height);
-                if (success) {
+                if (success&&this.downloadService.getStatus()!= DownloadStatus.DOWNLOADING) {
                     doPersistence(height);
                 } else {
-                    Thread.sleep(1000L);
+                    Thread.sleep(5000L);
                 }
             } catch (Exception e) {
                 Log.error(e);
@@ -90,39 +91,27 @@ public class BlockPersistenceThread implements Runnable {
     private void doPersistence(long height) throws IOException {
         Block block = blockManager.getBlock(height);
         if (null == block) {
-            List<Node> nodeList = networkService.getAvailableNodes();
-            if (nodeList == null || nodeList.isEmpty()) {
-                return;
-            }
-            List<String> nodeIdList = new ArrayList<>();
-            for (Node node : nodeList) {
-                nodeIdList.add(node.getId());
-            }
-            try {
-                BlockBatchDownloadUtils.getInstance().request(nodeIdList, height, height);
-            } catch (InterruptedException e) {
-                Log.error(e);
-            }
-            return;
+            BlockMaintenanceThread.getInstance().setStatus(MaintenanceStatus.READY);
+            throw new NulsRuntimeException(ErrorCode.DATA_ERROR,"the block shouldn't be null!height:"+height);
         }
         if (block.getTxs().isEmpty()) {
             //todo why
             Log.warn("block has no tx!");
-            blockManager.removeBlock(block.getHeader().getHash().getDigestHex());
-            return;
+            ConsensusManager.getInstance().clearCache();
+            NulsContext.getInstance().setBestBlock(blockService.getBlock(blockManager.getStoredHeight()));
+            throw new NulsRuntimeException(ErrorCode.DATA_ERROR,"the block txs shouldn't be null!height:"+height);
         }
         boolean isSuccess;
         try {
             isSuccess = blockService.saveBlock(block);
         } catch (Exception e) {
-            ConsensusManager.getInstance().destroy();
+            Log.error(e);
+            ConsensusManager.getInstance().clearCache();
             NulsContext.getInstance().setBestBlock(blockService.getBlock(blockManager.getStoredHeight()));
             isSuccess = false;
         }
         if (isSuccess) {
-            blockManager.removeBlock(block.getHeader().getHash().getDigestHex());
-
-            blockManager.setStoredHeight(height);
+            blockManager.storedBlock(block);
             txCacheManager.removeTxList(block.getTxHashList());
         }
     }

@@ -98,19 +98,12 @@ public interface BlockHeaderService extends BaseDataService<String, BlockHeaderP
      * @param roundEnd
      * @return
      */
-    long getCount(String address, long roundStart, long roundEnd);
+    long getCount(String address, long roundStart, long roundEnd,long startHeight);
 
     Map<String,Object> getSumTxCount(String address, long roundStart, long roundEnd);
 
-    /**
-     * use for POC consensus
-     *
-     * @param address
-     * @param endRoundIndex
-     * @return
-     */
-    List<Long> getListOfRoundIndexOfYellowPunish(String address, long startRoundIndex, long endRoundIndex);
-
     Long getRoundFirstBlockHeight(long roundIndex);
     Long getRoundLastBlockHeight(long roundIndex);
+
+    List<BlockHeaderPo> getBlockHashList(long start, long end);
 }

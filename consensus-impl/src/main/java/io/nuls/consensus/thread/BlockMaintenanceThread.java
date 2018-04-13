@@ -43,7 +43,6 @@ import io.nuls.core.validate.ValidateResult;
 import io.nuls.ledger.service.intf.LedgerService;
 import io.nuls.network.entity.Node;
 import io.nuls.network.service.NetworkService;
-import sun.applet.Main;
 
 import java.util.List;
 
@@ -52,9 +51,6 @@ import java.util.List;
  * @date 2017/11/10
  */
 public class BlockMaintenanceThread implements Runnable {
-
-    //todo 3
-    private static final int MIN_NODE_COUNT = 1;
 
     public static DistributedBlockInfoRequestUtils BEST_HEIGHT_FROM_NET = DistributedBlockInfoRequestUtils.getInstance();
 
@@ -66,7 +62,7 @@ public class BlockMaintenanceThread implements Runnable {
     private NetworkService networkService = NulsContext.getServiceBean(NetworkService.class);
     private MaintenanceStatus status = MaintenanceStatus.READY;
 
-    private long downloadHeight = 0L;
+    private long downloadHeight = -1L;
 
     private BlockMaintenanceThread() {
     }
@@ -75,8 +71,20 @@ public class BlockMaintenanceThread implements Runnable {
         return instance;
     }
 
+    public synchronized void sync(){
+
+
+
+
+
+
+
+    }
+
     public synchronized void syncBlock() {
         this.status = MaintenanceStatus.DOWNLOADING;
+
+        long lastDownloadHeight = 0L;
         while (true) {
             BestCorrectBlock bestCorrectBlock = checkLocalBestCorrentBlock();
             boolean doit = false;
@@ -107,21 +115,24 @@ public class BlockMaintenanceThread implements Runnable {
                     break;
                 }
             } while (false);
-
+        //todo check it
 
             if (null == bestCorrectBlock.getNetBestBlockInfo()) {
+                this.downloadHeight = 0;
                 return;
             }
             if (doit) {
+                lastDownloadHeight = bestCorrectBlock.getNetBestBlockInfo().getBestHeight();
                 downloadBlocks(bestCorrectBlock.getNetBestBlockInfo().getNodeIdList(), startHeight, bestCorrectBlock.getNetBestBlockInfo().getBestHeight());
             } else {
+                this.downloadHeight = lastDownloadHeight;
                 break;
             }
             long start = TimeService.currentTimeMillis();
             //todo
-            long timeout = (bestCorrectBlock.getNetBestBlockInfo().getBestHeight()-startHeight+1)*100;
-            while (NulsContext.getInstance().getBestHeight()<bestCorrectBlock.getNetBestBlockInfo().getBestHeight()){
-                if(TimeService.currentTimeMillis()>(timeout+start)){
+            long timeout = (bestCorrectBlock.getNetBestBlockInfo().getBestHeight() - startHeight + 1) * 100;
+            while (NulsContext.getInstance().getBestHeight() < bestCorrectBlock.getNetBestBlockInfo().getBestHeight()) {
+                if (TimeService.currentTimeMillis() > (timeout + start)) {
                     break;
                 }
                 try {
@@ -136,7 +147,6 @@ public class BlockMaintenanceThread implements Runnable {
 
     private void downloadBlocks(List<String> nodeIdList, long startHeight, long endHeight) {
         BlockBatchDownloadUtils utils = BlockBatchDownloadUtils.getInstance();
-        this.downloadHeight = endHeight;
         try {
             utils.request(nodeIdList, startHeight, endHeight);
         } catch (InterruptedException e) {
@@ -202,7 +212,7 @@ public class BlockMaintenanceThread implements Runnable {
                 }
                 Log.warn("Rollback block start height:{},local is highest and wrong!", localBestBlock.getHeader().getHeight());
                 //bifurcation
-                rollbackBlock(localBestBlock.getHeader().getHeight());
+                rollbackBlock(localBestBlock);
                 localBestBlock = this.blockService.getLocalBestBlock();
                 break;
             } else {
@@ -224,35 +234,27 @@ public class BlockMaintenanceThread implements Runnable {
         }
         Log.debug("Rollback block start height:{},local has wrong blocks!", block.getHeader().getHeight());
         //bifurcation
-        rollbackBlock(block.getHeader().getHeight());
+        rollbackBlock(block);
     }
 
-    private void rollbackBlock(long startHeight) {
+    private void rollbackBlock(Block block) {
         try {
-            this.blockService.rollbackBlock(startHeight);
-            long height = startHeight - 1;
-            Block block = getPreBlock(height);
-            NulsContext.getInstance().setBestBlock(block);
-            checkNeedRollback(block);
+            this.blockService.rollbackBlock(block.getHeader().getHash().getDigestHex());
+            Block preblock = this.blockService.getBlock(block.getHeader().getPreHash().getDigestHex());
+            NulsContext.getInstance().setBestBlock(blockService.getBestBlock());
+            checkNeedRollback(preblock);
         } catch (NulsException e) {
             Log.error(e);
             return;
         }
     }
 
-    private Block getPreBlock(long height) {
-        Block block = this.blockService.getBlock(height);
-        if (null == block) {
-            block = getPreBlock(height - 1);
-        }
-        return block;
-    }
 
     public MaintenanceStatus getStatus() {
         if (this.status == null) {
             return MaintenanceStatus.FAILED;
         }
-        if (status == MaintenanceStatus.DOWNLOADING && NulsContext.getInstance().getBestHeight() >= this.downloadHeight) {
+        if (status == MaintenanceStatus.DOWNLOADING && NulsContext.getInstance().getBestHeight() >= this.downloadHeight && this.downloadHeight > -1L) {
             this.status = MaintenanceStatus.SUCCESS;
         }
         return status;
@@ -267,14 +269,15 @@ public class BlockMaintenanceThread implements Runnable {
         while (true) {
             try {
                 //todo failed
-                if (this.status == MaintenanceStatus.READY) {
+                if (this.status == MaintenanceStatus.READY||this.status==MaintenanceStatus.FAILED) {
                     List<Node> nodeList = networkService.getAvailableNodes();
-                    if (nodeList.size() >= MIN_NODE_COUNT) {
+                    if (nodeList.size() >= PocConsensusConstant.ALIVE_MIN_NODE_COUNT) {
                         this.syncBlock();
                     }
                 }
             } catch (Exception e) {
-                Log.error(e);
+                Log.error(e.getMessage());
+                this.status=MaintenanceStatus.FAILED;
             }
             try {
                 Thread.sleep(1000L);

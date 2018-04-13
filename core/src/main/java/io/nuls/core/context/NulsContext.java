@@ -25,6 +25,8 @@ package io.nuls.core.context;
 
 import io.nuls.core.chain.entity.Block;
 import io.nuls.core.chain.entity.Na;
+import io.nuls.core.constant.ErrorCode;
+import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.utils.cfg.IniEntity;
 import io.nuls.core.utils.date.TimeService;
 import io.nuls.core.utils.log.Log;
@@ -40,7 +42,7 @@ import java.util.Set;
  * @author Niels
  */
 public class NulsContext {
-    private static String CACHED_PASSWORD_OF_WALLET = "nuls123456";
+    private static String CACHED_PASSWORD_OF_WALLET  ;
 
     private static final HashMap<String, Short> CHAIN_ID_MAP = new HashMap<String, Short>();
     public static String DEFAULT_ENCODING = "UTF-8";
@@ -118,6 +120,9 @@ public class NulsContext {
 
 
     public void setBestBlock(Block bestBlock) {
+        if(bestBlock==null){
+            throw new NulsRuntimeException(ErrorCode.FAILED,"best block set to null!");
+        }
         this.bestBlock = bestBlock;
     }
 
@@ -183,6 +188,12 @@ public class NulsContext {
     }
 
     public static String getCachedPasswordOfWallet() {
+        if(null==CACHED_PASSWORD_OF_WALLET){
+            CACHED_PASSWORD_OF_WALLET = PackingPasswordUtils.read();
+        }
+        if(null==CACHED_PASSWORD_OF_WALLET){
+            CACHED_PASSWORD_OF_WALLET = "nuls123456";
+        }
         return CACHED_PASSWORD_OF_WALLET;
     }
 

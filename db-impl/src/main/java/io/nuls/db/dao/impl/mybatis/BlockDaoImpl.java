@@ -145,7 +145,7 @@ public class BlockDaoImpl extends BaseDaoImpl<BlockHeaderMapper, String, BlockHe
     }
 
     @Override
-    public long getCount(String address, long roundStart, long roundEnd) {
+    public long getCount(String address, long roundStart, long roundEnd,long endHeight) {
         Map<String, Object> map = new HashMap<>();
         map.put(BlockSearchParams.SEARCH_FIELD_ADDRESS, address);
         if (roundEnd >= 0) {
@@ -154,6 +154,7 @@ public class BlockDaoImpl extends BaseDaoImpl<BlockHeaderMapper, String, BlockHe
         if (roundStart >= 0) {
             map.put(BlockSearchParams.SEARCH_FIELD_ROUND_END, roundEnd);
         }
+        map.put(BlockSearchParams.SEARCH_FIELD_HEIGHT_END,endHeight);
         return getCount(map);
     }
 
@@ -173,16 +174,6 @@ public class BlockDaoImpl extends BaseDaoImpl<BlockHeaderMapper, String, BlockHe
     }
 
     @Override
-    public List<Long> getListOfRoundIndexOfYellowPunish(String address, long startRoundIndex, long endRoundIndex) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("address", address);
-        params.put("startRoundIndex", startRoundIndex);
-        params.put("endRoundIndex", endRoundIndex);
-        params.put("txType", TransactionConstant.TX_TYPE_YELLOW_PUNISH);
-        return this.getMapper().getSumOfRoundIndexOfYellowPunish(params);
-    }
-
-    @Override
     public Long getRoundFirstBlockHeight(long roundIndex) {
         return this.getMapper().getRoundFirstBlockHeight(roundIndex);
     }
@@ -192,4 +183,11 @@ public class BlockDaoImpl extends BaseDaoImpl<BlockHeaderMapper, String, BlockHe
         return this.getMapper().getRoundLastBlockHeight(roundIndex);
     }
 
+    @Override
+    public List<BlockHeaderPo> getBlockHashList(long start, long end) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("startHeight", start);
+        params.put("endHeight", end);
+        return this.getMapper().getBlockHashList(params);
+    }
 }

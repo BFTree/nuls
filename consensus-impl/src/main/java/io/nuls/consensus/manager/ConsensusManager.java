@@ -33,12 +33,15 @@ import io.nuls.consensus.cache.manager.tx.ReceivedTxCacheManager;
 import io.nuls.consensus.constant.PocConsensusConstant;
 import io.nuls.consensus.entity.genesis.GenesisBlock;
 import io.nuls.consensus.service.impl.BlockStorageService;
+import io.nuls.consensus.service.intf.DownloadService;
 import io.nuls.consensus.thread.BlockMaintenanceThread;
 import io.nuls.consensus.thread.BlockPersistenceThread;
 import io.nuls.consensus.thread.ConsensusMeetingRunner;
+import io.nuls.consensus.thread.SystemMonitorThread;
 import io.nuls.core.chain.entity.Block;
 import io.nuls.core.constant.NulsConstant;
 import io.nuls.core.context.NulsContext;
+import io.nuls.core.thread.manager.NulsThreadFactory;
 import io.nuls.core.thread.manager.TaskManager;
 import io.nuls.core.utils.log.Log;
 import io.nuls.core.utils.str.StringUtils;
@@ -47,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Niels
@@ -66,6 +71,7 @@ public class ConsensusManager {
     private BlockStorageService blockStorageService = BlockStorageService.getInstance();
     private boolean partakePacking = false;
     private List<String> seedNodeList;
+    private ScheduledThreadPoolExecutor threadPool;
 
     private ConsensusManager() {
     }
@@ -123,6 +129,7 @@ public class ConsensusManager {
 
 
         consensusCacheManager = ConsensusCacheManager.getInstance();
+        consensusCacheManager.init();
         confirmingTxCacheManager = ConfirmingTxCacheManager.getInstance();
         confirmingTxCacheManager.init();
         receivedTxCacheManager = ReceivedTxCacheManager.getInstance();
@@ -131,10 +138,17 @@ public class ConsensusManager {
         orphanTxCacheManager.init();
     }
 
-    public void joinConsensusMeeting() {
-        TaskManager.createAndRunThread(NulsConstant.MODULE_ID_CONSENSUS,
-                ConsensusMeetingRunner.THREAD_NAME,
-                ConsensusMeetingRunner.getInstance());
+    public void startConsensusWork() {
+
+        threadPool = TaskManager.createScheduledThreadPool(1,
+                new NulsThreadFactory(NulsConstant.MODULE_ID_CONSENSUS, ConsensusMeetingRunner.THREAD_NAME));
+        threadPool.scheduleAtFixedRate(ConsensusMeetingRunner.getInstance(), 200, 200, TimeUnit.MILLISECONDS);
+
+    }
+
+    public void startMonitorWork() {
+        //TODO open a separate thread pool
+        threadPool.scheduleAtFixedRate(new SystemMonitorThread(), 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -151,18 +165,27 @@ public class ConsensusManager {
         } catch (Exception e) {
             Log.error(e.getMessage());
         } finally {
-            TaskManager.createAndRunThread(NulsConstant.MODULE_ID_CONSENSUS,
-                    BlockMaintenanceThread.THREAD_NAME, blockMaintenanceThread);
+//                TaskManager.createAndRunThread(NulsConstant.MODULE_ID_CONSENSUS,
+//                    BlockMaintenanceThread.THREAD_NAME, blockMaintenanceThread);
         }
     }
 
-    public void destroy() {
+    public void startDownloadWork() {
+        NulsContext.getServiceBean(DownloadService.class).start();
+    }
+
+    public void clearCache() {
         blockCacheManager.clear();
         temporaryCacheManager.clear();
-        consensusCacheManager.clear();
         confirmingTxCacheManager.clear();
         receivedTxCacheManager.clear();
         orphanTxCacheManager.clear();
+        consensusCacheManager.init();
+        ConsensusMeetingRunner.getInstance().resetConsensus();
+    }
+
+    public void destroy() {
+        threadPool.shutdown();
     }
 
     public boolean isPartakePacking() {
@@ -173,4 +196,5 @@ public class ConsensusManager {
     public List<String> getSeedNodeList() {
         return seedNodeList;
     }
+
 }

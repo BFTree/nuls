@@ -60,7 +60,7 @@ public interface BlockService {
 
     boolean saveBlock(Block block) throws IOException;
 
-    void rollbackBlock(long height) throws NulsException;
+    void rollbackBlock(String hash) throws NulsException;
 
     List<BlockHeader> getBlockHeaderList(long start, long end, long split);
 
@@ -70,9 +70,29 @@ public interface BlockService {
 
     BlockHeader getBlockHeader(NulsDigestData hash) throws NulsException;
 
-    Block getRoundFirstBlock(Block bestBlock,long roundIndex);
+    Block getPreRoundFirstBlock(long roundIndex);
 
     long getPackingCount(String address);
 
     Map<String, Object> getSumTxCount(String address, long roundStart, long roundEnd);
+
+    Block getBestBlock();
+
+    void approvalBlock(String hash);
+
+    List<BlockHeaderPo> getBlockHashList(long start, long end);
+
+    /**
+     * get the block from approvingChain;
+     * @param start
+     * @return
+     */
+    Block getBlockFromMyChain(long start);
+
+    /**
+     * get the block from approvingChain;
+     * @param hash
+     * @return
+     */
+    Block getBlockFromMyChain(String hash);
 }

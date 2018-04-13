@@ -25,19 +25,20 @@
  */
 package io.nuls.consensus.cache.manager.block;
 
+import io.nuls.account.entity.Address;
 import io.nuls.cache.util.CacheMap;
 import io.nuls.consensus.constant.ConsensusCacheConstant;
 import io.nuls.core.chain.entity.Block;
 import io.nuls.core.chain.entity.BlockHeader;
 import io.nuls.core.chain.entity.Transaction;
-import io.nuls.core.constant.ErrorCode;
-import io.nuls.core.context.NulsContext;
-import io.nuls.core.exception.NulsRuntimeException;
+import io.nuls.core.utils.log.BlockLog;
+import io.nuls.core.utils.log.Log;
 
 import java.util.List;
 
 /**
  * cache block data
+ *
  * @author Niels
  * @date 2017/12/12
  */
@@ -55,8 +56,8 @@ public class ConfirmingBlockCacheManager {
     }
 
     public void init() {
-        txsCacheMap = new CacheMap<>(ConsensusCacheConstant.BLOCK_TXS_CACHE_NAME, 256, 0, 0);
-        headerCacheMap = new CacheMap<>(ConsensusCacheConstant.BLOCK_HEADER_CACHE_NAME, 64, 0, 0);
+        txsCacheMap = new CacheMap<>(ConsensusCacheConstant.BLOCK_TXS_CACHE_NAME, 256, 1000000, 1000000);
+        headerCacheMap = new CacheMap<>(ConsensusCacheConstant.BLOCK_HEADER_CACHE_NAME, 64, 1000000, 1000000);
     }
 
     public BlockHeader getBlockHeader(String hash) {
@@ -67,18 +68,13 @@ public class ConfirmingBlockCacheManager {
     }
 
     public boolean cacheBlock(Block block) {
-        if (null == block || null == block.getHeader() || block.getTxs().isEmpty()) {
-            throw new NulsRuntimeException(ErrorCode.DATA_ERROR, "The block is wrong!");
-        }
-        if(headerCacheMap.isEmpty()&&!block.getHeader().getPreHash().getDigestHex().equals(NulsContext.getInstance().getBestBlock().getHeader().getHash().getDigestHex())){
-            return false;
-        }
-        if (!headerCacheMap.isEmpty()&&!headerCacheMap.containsKey(block.getHeader().getPreHash().getDigestHex())) {
-            return false;
-        }
         String hash = block.getHeader().getHash().getDigestHex();
         headerCacheMap.put(hash, block.getHeader());
         txsCacheMap.put(hash, block.getTxs());
+        BlockLog.debug("cache block height:" + block.getHeader().getHeight() + ", preHash:" + block.getHeader().getPreHash() + " , hash:" + block.getHeader().getHash() + ", address:" + Address.fromHashs(block.getHeader().getPackingAddress()));
+        if (null == headerCacheMap.get(hash)) {
+            System.out.println();
+        }
         return true;
     }
 
@@ -99,6 +95,7 @@ public class ConfirmingBlockCacheManager {
     }
 
     public void clear() {
+        BlockLog.debug("clear cached block hash！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！");
         this.txsCacheMap.clear();
         this.headerCacheMap.clear();
     }
@@ -109,6 +106,7 @@ public class ConfirmingBlockCacheManager {
     }
 
     public void removeBlock(String hash) {
+        BlockLog.debug("remove cached block hash:" + hash);
         this.txsCacheMap.remove(hash);
         this.headerCacheMap.remove(hash);
     }

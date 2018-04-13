@@ -47,7 +47,7 @@ public class PocMeetingMember implements Comparable<PocMeetingMember> {
     /**
      * Starting from 1
      */
-    private int indexOfRound;
+    private int packingIndexOfRound;
     private double creditVal;
     private String sortValue;
     private Consensus<Agent> agentConsensus;
@@ -82,8 +82,8 @@ public class PocMeetingMember implements Comparable<PocMeetingMember> {
 
     public String getSortValue() {
         if (this.sortValue == null) {
-            String hashHex = new Address(this.getAgentAddress()).hashHex();
-            sortValue = Sha256Hash.twiceOf((roundStartTime + hashHex).getBytes()).toString();
+            String hashHex = new Address(this.getPackingAddress()).hashHex() + roundStartTime;
+            sortValue = Sha256Hash.twiceOf((hashHex).getBytes()).toString();
         }
         return sortValue;
     }
@@ -94,6 +94,7 @@ public class PocMeetingMember implements Comparable<PocMeetingMember> {
 
     public void setRoundStartTime(long roundStartTime) {
         this.roundStartTime = roundStartTime;
+        this.sortValue = null;
     }
 
     public String getAgentHash() {
@@ -120,21 +121,21 @@ public class PocMeetingMember implements Comparable<PocMeetingMember> {
         this.packingAddress = packingAddress;
     }
 
-    public int getIndexOfRound() {
-        return indexOfRound;
+    public int getPackingIndexOfRound() {
+        return packingIndexOfRound;
     }
 
-    public void setIndexOfRound(int indexOfRound) {
-        this.indexOfRound = indexOfRound;
+    public void setPackingIndexOfRound(int packingIndexOfRound) {
+        this.packingIndexOfRound = packingIndexOfRound;
     }
 
     public long getPackStartTime() {
-        long packTime = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000 * (this.getIndexOfRound() - 1) + roundStartTime;
+        long packTime = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000 * (this.getPackingIndexOfRound() - 1) + roundStartTime;
         return packTime;
     }
 
     public long getPackEndTime() {
-        long packTime = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000 * this.getIndexOfRound() + roundStartTime;
+        long packTime = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000 * this.getPackingIndexOfRound() + roundStartTime;
         return packTime;
     }
 
@@ -147,8 +148,12 @@ public class PocMeetingMember implements Comparable<PocMeetingMember> {
         this.roundIndex = roundIndex;
     }
 
-    public double getCreditVal() {
+    public double getRealCreditVal() {
         return creditVal;
+    }
+
+    public double getCalcCreditVal() {
+        return creditVal < 0d ? 0D : this.creditVal;
     }
 
     public void setCreditVal(double creditVal) {

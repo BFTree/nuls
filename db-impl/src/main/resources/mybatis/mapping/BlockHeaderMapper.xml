@@ -87,6 +87,16 @@
         and height <= #{endHeight,jdbcType=BIGINT}
         and mod((height-#{startHeight,jdbcType=BIGINT}),#{split,jdbcType=BIGINT})=0
 
+
+
+        ]]>
+    </select>
+    <select id="getBlockHashList" resultMap="BaseResultMap" parameterType="java.util.Map">
+        SELECT height, hash from block_header
+        <![CDATA[
+        where height >=#{startHeight,jdbcType=BIGINT}
+        and height <= #{endHeight,jdbcType=BIGINT}
+        ORDER BY height ASC
         ]]>
     </select>
     <select id="getSumOfRoundIndexOfYellowPunish" resultType="long" parameterType="java.util.Map">
@@ -99,6 +109,8 @@
          and b.round_index>=#{startRoundIndex,jdbcType=BIGINT}
          and b.round_index <=#{endRoundIndex,jdbcType=BIGINT}
 
+
+
         ]]>
     </select>
 
@@ -106,7 +118,7 @@
             resultMap="BaseResultMap">
         select b.*
         from agent a
-        join block_header b on a.agent_address = b.consensus_address
+        join block_header b on a.packing_address = b.consensus_address
         <include refid="io.nuls.db.dao.impl.mybatis.common.CommonMapper.Search_Where"/>
     </select>
 

@@ -81,7 +81,7 @@ public class DistributedBlockInfoRequestUtils {
             hashesMap.clear();
             calcMap.clear();
             this.askHeight = height;
-            GetBlocksHashRequest event = new GetBlocksHashRequest(askHeight, askHeight, 1);
+            GetBlocksHashRequest event = new GetBlocksHashRequest(askHeight, askHeight);
             this.startTime = TimeService.currentTimeMillis();
             this.nodeIdList = new CopyOnWriteArrayList<>();
             List<Node> nodes = networkService.getAvailableNodes();
@@ -121,6 +121,9 @@ public class DistributedBlockInfoRequestUtils {
         if (response.getBestHeight() == 0 && NulsContext.getInstance().getBestHeight() > 0) {
             hashesMap.remove(nodeId);
             nodeIdList.remove(nodeId);
+            return false;
+        }
+        if (this.askHeight>0&&this.askHeight != response.getBestHeight()) {
             return false;
         }
         if (hashesMap.get(nodeId) == null) {
@@ -213,26 +216,34 @@ public class DistributedBlockInfoRequestUtils {
             }
             long timeout = 10000L;
 
-            if ( hashesMap.size() >= (4*nodeIdList.size() / 5)) {
+            if ((TimeService.currentTimeMillis() - startTime) > timeout && hashesMap.size() >= (1 + nodeIdList.size() / 2)) {
                 int maxSize = 0;
                 List<String> nodeIds = null;
                 try {
-                    for(String key:calcMap.keySet()){
-                        List<String > ids = calcMap.get(key);
-                        if(ids.size()>maxSize){
+                    for (String key : calcMap.keySet()) {
+                        List<String> ids = calcMap.get(key);
+                        if (ids.size() > maxSize) {
                             maxSize = ids.size();
                             nodeIds = ids;
+                        } else if (ids.size() == maxSize) {
+                            BlockHashResponse response_a = hashesMap.get(nodeIds.get(0));
+                            long height_a = response_a.getBestHeight();
+                            BlockHashResponse response_b = hashesMap.get(ids.get(0));
+                            long height_b = response_b.getBestHeight();
+                            if (height_b > height_a) {
+                                nodeIds = ids;
+                            }
                         }
                     }
                 } catch (Exception e) {
                     break;
                 }
-                if(null==nodeIds||nodeIds.isEmpty()){
+                if (null == nodeIds || nodeIds.isEmpty()) {
                     continue;
                 }
                 BlockHashResponse response = hashesMap.get(nodeIds.get(0));
                 BlockInfo result = new BlockInfo();
-                result.putHash(response.getBestHeight() , response.getBestHash());
+                result.putHash(response.getBestHeight(), response.getBestHash());
                 result.setBestHash(response.getBestHash());
                 result.setBestHeight(response.getBestHeight());
                 result.setNodeIdList(nodeIds);

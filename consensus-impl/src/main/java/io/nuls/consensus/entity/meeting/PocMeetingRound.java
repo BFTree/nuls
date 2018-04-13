@@ -25,10 +25,12 @@ package io.nuls.consensus.entity.meeting;
 
 import io.nuls.account.entity.Account;
 import io.nuls.consensus.constant.PocConsensusConstant;
-import io.nuls.core.chain.entity.Na;
 import io.nuls.core.constant.ErrorCode;
 import io.nuls.core.exception.NulsRuntimeException;
+import io.nuls.core.utils.date.TimeService;
+import io.nuls.core.utils.log.BlockLog;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +41,7 @@ import java.util.Map;
  */
 public class PocMeetingRound {
     private Account localPacker;
-    private Na totalDeposit;
+    private double totalWeight;
     private long index;
     private long startTime;
     private int memberCount;
@@ -96,7 +98,7 @@ public class PocMeetingRound {
             PocMeetingMember pmm = memberList.get(i);
             pmm.setRoundIndex(this.getIndex());
             pmm.setRoundStartTime(this.getStartTime());
-            pmm.setIndexOfRound(i + 1);
+            pmm.setPackingIndexOfRound(i + 1);
             addressOrderMap.put(pmm.getPackingAddress(), i+1);
         }
     }
@@ -129,12 +131,13 @@ public class PocMeetingRound {
         this.index = index;
     }
 
-    public Na getTotalDeposit() {
-        return totalDeposit;
+
+    public double getTotalWeight() {
+        return totalWeight;
     }
 
-    public void setTotalDeposit(Na totalDeposit) {
-        this.totalDeposit = totalDeposit;
+    public void setTotalWeight(double totalWeight) {
+        this.totalWeight = totalWeight;
     }
 
     public List<PocMeetingMember> getMemberList() {
@@ -147,6 +150,23 @@ public class PocMeetingRound {
                 this.localPacker = account;
                 return;
             }
+        }
+    }
+
+    public String toString(){
+        StringBuilder str = new StringBuilder();
+        for (PocMeetingMember member : this.getMemberList()) {
+            str.append(member.getPackingAddress());
+            str.append(" ,order:" + member.getPackingIndexOfRound());
+            str.append(",packTime:" + new Date(member.getPackEndTime()));
+            str.append("\n");
+        }
+        if (null == this.getPreRound()) {
+            return ("round:index:" + this.getIndex() + " , start:" + new Date(this.getStartTime())
+                    + ", netTime:(" + new Date(TimeService.currentTimeMillis()).toString() + ") , members:\n :" + str);
+        } else {
+            return ("round:index:" + this.getIndex() + " ,preIndex:" + this.getPreRound().getIndex() + " , start:" + new Date(this.getStartTime())
+                    + ", netTime:(" + new Date(TimeService.currentTimeMillis()).toString() + ") , members:\n :" + str);
         }
     }
 }

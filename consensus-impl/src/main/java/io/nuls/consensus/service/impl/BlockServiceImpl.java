@@ -23,6 +23,7 @@
  */
 package io.nuls.consensus.service.impl;
 
+import io.nuls.account.entity.Address;
 import io.nuls.consensus.entity.block.BlockRoundData;
 import io.nuls.consensus.manager.BlockManager;
 import io.nuls.consensus.service.intf.BlockService;
@@ -37,6 +38,7 @@ import io.nuls.core.context.NulsContext;
 import io.nuls.core.dto.Page;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.exception.NulsRuntimeException;
+import io.nuls.core.utils.log.BlockLog;
 import io.nuls.core.utils.log.Log;
 import io.nuls.core.utils.spring.lite.annotation.Autowired;
 import io.nuls.core.validate.ValidateResult;
@@ -152,6 +154,7 @@ public class BlockServiceImpl implements BlockService {
     @Override
     @DbSession
     public boolean saveBlock(Block block) throws IOException {
+        BlockLog.debug("save block height:" + block.getHeader().getHeight() + ", preHash:" + block.getHeader().getPreHash() + " , hash:" + block.getHeader().getHash() + ", address:" + Address.fromHashs(block.getHeader().getPackingAddress()));
         ValidateResult result = block.verify();
         boolean b = false;
         if (result.isFailed() && result.getErrorCode() != ErrorCode.ORPHAN_TX && ErrorCode.ORPHAN_BLOCK != result.getErrorCode()) {
@@ -161,9 +164,9 @@ public class BlockServiceImpl implements BlockService {
         }
         for (int x = 0; x < block.getHeader().getTxCount(); x++) {
             Transaction tx = block.getTxs().get(x);
-            if (tx.getStatus() == TxStatusEnum.CACHED) {
+            tx.setBlockHeight(block.getHeader().getHeight());
+            if (tx.getStatus()==null||tx.getStatus() == TxStatusEnum.CACHED) {
                 b = true;
-                tx.setBlockHeight(block.getHeader().getHeight());
                 try {
                     ledgerService.approvalTx(tx);
                 } catch (Exception e) {
@@ -179,8 +182,8 @@ public class BlockServiceImpl implements BlockService {
         for (int x = 0; x < block.getHeader().getTxCount(); x++) {
             Transaction tx = block.getTxs().get(x);
             tx.setIndex(x);
+            tx.setBlockHeight(block.getHeader().getHeight());
             if (tx.getStatus() == TxStatusEnum.AGREED) {
-                tx.setBlockHeight(block.getHeader().getHeight());
                 try {
                     ledgerService.commitTx(tx);
                 } catch (Exception e) {
@@ -198,15 +201,19 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     @DbSession
-    public void rollbackBlock(long height) {
-        Block block = this.getBlock(height);
+    public void rollbackBlock(String hash) {
+        Block block = this.getBlock(hash);
         if (null == block) {
             return;
         }
-        blockManager.rollback(block);
+        boolean result = this.blockManager.rollback(block);
+        if (result) {
+            return;
+        }
         this.rollback(block.getTxs(), block.getTxs().size() - 1);
         this.ledgerService.deleteTx(block.getHeader().getHeight());
         blockStorageService.delete(block.getHeader().getHash().getDigestHex());
+        NulsContext.getInstance().setBestBlock(this.getBestBlock());
     }
 
 
@@ -237,7 +244,7 @@ public class BlockServiceImpl implements BlockService {
 
     @Override
     public long getPackingCount(String address) {
-        return blockStorageService.getBlockCount(address, -1, -1);
+        return blockStorageService.getBlockCount(address, -1L, -1L,0L);
     }
 
     @Override
@@ -246,21 +253,29 @@ public class BlockServiceImpl implements BlockService {
     }
 
     @Override
-    public Block getRoundFirstBlock(Block bestBlock, long roundIndex) {
+    public Block getPreRoundFirstBlock(long roundIndex) {
+        //todo block-》blockheader
         Long height = this.blockStorageService.getRoundFirstBlockHeight(roundIndex);
         if (null == height) {
-            Block resultBlock = bestBlock;
+            Block resultBlock = getBestBlock();
+            Block preResultBlock = null;
             String hashHex = resultBlock.getHeader().getPreHash().getDigestHex();
             while (true) {
+                BlockRoundData roundData = new BlockRoundData(resultBlock.getHeader().getExtend());
+                if (roundData.getRoundIndex() == roundIndex && roundData.getPackingIndexOfRound() == 1) {
+                    break;
+                }
+                if (roundData.getRoundIndex() < roundIndex) {
+                    if (null != preResultBlock) {
+                        resultBlock = preResultBlock;
+                    }
+                    break;
+                }
                 if (resultBlock.getHeader().getHeight() == 0) {
                     return resultBlock;
                 }
-                BlockRoundData roundData = new BlockRoundData(resultBlock.getHeader().getExtend());
-                if (roundData.getRoundIndex() > roundIndex) {
-                    break;
-                }
-                if (roundData.getRoundIndex() == roundIndex && roundData.getPackingIndexOfRound() == 1) {
-                    break;
+                if (roundData.getRoundIndex() <= roundIndex) {
+                    preResultBlock = resultBlock;
                 }
                 resultBlock = getBlock(hashHex);
                 if (null == resultBlock) {
@@ -283,5 +298,39 @@ public class BlockServiceImpl implements BlockService {
             }
         }
 
+    }
+
+    @Override
+    public Block getBestBlock() {
+        Block highestBlock = BlockManager.getInstance().getHighestBlock();
+        if (null == highestBlock) {
+            highestBlock = this.getLocalBestBlock();
+        }
+        return highestBlock;
+    }
+
+    @Override
+    public void approvalBlock(String hash) {
+        Block block = this.getBlock(hash);
+        if (null == block) {
+            Log.info("the block is null:" + block.getHeader().getHash());
+            return;
+        }
+        blockManager.appravalBlock(block);
+    }
+
+    @Override
+    public List<BlockHeaderPo> getBlockHashList(long start, long end) {
+        return blockStorageService.getBlockHashList(start, end);
+    }
+
+    @Override
+    public Block getBlockFromMyChain(long start) {
+        return blockStorageService.getBlockFromMyChain(start);
+    }
+
+    @Override
+    public Block getBlockFromMyChain(String hash) {
+        return blockStorageService.getBlockFromMyChain(hash);
     }
 }

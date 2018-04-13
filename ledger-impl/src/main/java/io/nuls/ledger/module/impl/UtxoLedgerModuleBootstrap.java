@@ -76,14 +76,14 @@ public class UtxoLedgerModuleBootstrap extends AbstractLedgerModule {
      * there validators any kind of transaction will be used
      */
     private void addNormalTxValidator() {
-        TransactionValidatorManager.addTxDefValidator(TxMaxSizeValidator.getInstance());
-        TransactionValidatorManager.addTxDefValidator(TxRemarkValidator.getInstance());
+//        TransactionValidatorManager.addTxDefValidator(TxMaxSizeValidator.getInstance());
+//        TransactionValidatorManager.addTxDefValidator(TxRemarkValidator.getInstance());
         TransactionValidatorManager.addTxDefValidator(TxFieldValidator.getInstance());
         TransactionValidatorManager.addTxDefValidator(TxSignValidator.getInstance());
 
         CoinTransactionValidatorManager.addTxDefValidator(UtxoTxInputsValidator.getInstance());
         CoinTransactionValidatorManager.addTxDefValidator(UtxoTxOutputsValidator.getInstance());
-        CoinTransactionValidatorManager.addTxDefValidator(AmountValidator.getInstance());
+//        CoinTransactionValidatorManager.addTxDefValidator(TransferTxValidator.getInstance());
     }
 
     private void registerService() {

@@ -245,7 +245,7 @@ public class NodesManager implements Runnable {
             removeNode(node);
         } else {
             System.out.println("------------remove node is null-----------" + nodeId);
-            nodeDao.removeNode(node.getPoId());
+            nodeDao.removeNode(nodeId);
         }
     }
 

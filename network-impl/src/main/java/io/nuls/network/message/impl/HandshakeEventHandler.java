@@ -57,7 +57,10 @@ public class HandshakeEventHandler implements NetWorkEventHandler {
             }
         }
 
+        node.setFailCount(0);
         node.setSeverPort(handshakeEvent.getSeverPort());
+
+        getNetworkService().saveNode(node);
         VersionEvent versionEvent = new VersionEvent(handshakeEvent.getSeverPort(), handshakeEvent.getBestBlockHeight(), handshakeEvent.getBestBlockHash());
         node.setVersionMessage(versionEvent);
 

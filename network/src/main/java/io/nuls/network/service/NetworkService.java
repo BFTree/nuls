@@ -67,6 +67,8 @@ public interface NetworkService {
 
     boolean isSeedNode(String ip);
 
+    void saveNode(Node node);
+
     boolean isSeed();
 
     boolean handshakeNode(String groupName, Node node);

@@ -1,18 +1,18 @@
 /**
  * MIT License
- **
+ * *
  * Copyright (c) 2017-2018 nuls.io
- **
+ * *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- **
+ * *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- **
+ * *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -184,7 +184,6 @@ public class NodesManager implements Runnable {
                     }
                 }
                 removeNodeHandler(node);
-
             }
         } finally {
             lock.unlock();
@@ -245,7 +244,8 @@ public class NodesManager implements Runnable {
         if (node != null) {
             removeNode(node);
         } else {
-            nodeDao.removeNode(node.getId() + ":" + node.getSeverPort());
+            System.out.println("------------remove node is null-----------" + nodeId);
+            nodeDao.removeNode(node.getPoId());
         }
     }
 
@@ -273,7 +273,7 @@ public class NodesManager implements Runnable {
             connectedNodes.remove(node.getId());
             handShakeNodes.remove(node.getId());
             if (node.getStatus() == Node.BAD) {
-                //todo  remove database
+                nodeDao.removeNode(node.getPoId());
             }
             return;
         }
@@ -285,15 +285,14 @@ public class NodesManager implements Runnable {
             handShakeNodes.remove(node.getId());
         }
 
-        // 哪些情况会在dis里加入node
-        if (!disConnectNodes.containsKey(node.getId())) {
-            disConnectNodes.put(node.getId(), node);
-        }
-
         if (node.getFailCount() <= NetworkConstant.FAIL_MAX_COUNT) {
             node.setLastFailTime(System.currentTimeMillis() + 5 * 1000 * node.getFailCount());
+            if (!disConnectNodes.containsKey(node.getId())) {
+                disConnectNodes.put(node.getId(), node);
+            }
         } else {
-            //todo remove database
+            disConnectNodes.remove(node.getId());
+            nodeDao.removeNode(node.getPoId());
         }
     }
 
@@ -305,6 +304,11 @@ public class NodesManager implements Runnable {
             }
         }
         node.getGroupSet().clear();
+    }
+
+    public void saveNode(Node node) {
+        NodePo po = NodeTransferTool.toPojo(node);
+        nodeDao.saveChange(po);
     }
 
     public void deleteNode(String nodeId) {

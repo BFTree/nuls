@@ -410,17 +410,16 @@ public class NodesManager implements Runnable {
     }
 
     private void removeSeedNode() {
-        Collection<Node> nodes = connectedNodes.values();
+        Collection<Node> nodes = handShakeNodes.values();
         int count = 0;
         List<String> seedIpList = network.getSeedIpList();
         Collections.shuffle(seedIpList);
-        for (String ip : seedIpList) {
-            for (Node n : nodes) {
-                if (n.getIp().equals(ip)) {
-                    count++;
-                    if (count > 2) {
-                        removeNode(n);
-                    }
+
+        for (Node n : nodes) {
+            if (seedIpList.contains(n.getIp())) {
+                count++;
+                if (count > 2) {
+                    removeNode(n);
                 }
             }
         }
@@ -461,16 +460,18 @@ public class NodesManager implements Runnable {
                 for (Node node : seedNodes) {
                     addNode(node);
                 }
-            } else {
-                NodeGroup outGroup = getNodeGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP);
-                if (outGroup.size() < network.maxOutCount()) {
-                    int size = network.maxOutCount() - handShakeNodes.size();
-                    if (size > 0) {
-                        getNodeFromDataBase(size);
-                        getNodeFromOther(size);
-                    }
+            } else if (handShakeNodes.size() > network.maxOutCount()) {
+                removeSeedNode();
+            }
+            NodeGroup outGroup = getNodeGroup(NetworkConstant.NETWORK_NODE_OUT_GROUP);
+            if (outGroup.size() < network.maxOutCount()) {
+                int size = network.maxOutCount() - handShakeNodes.size();
+                if (size > 0) {
+                    getNodeFromDataBase(size);
+                    getNodeFromOther(size);
                 }
             }
+
 
             for (Node node : disConnectNodes.values()) {
                 if (node.getType() == Node.OUT && node.getStatus() == Node.CLOSE) {

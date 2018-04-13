@@ -245,7 +245,7 @@ public class NodesManager implements Runnable {
             removeNode(node);
         } else {
             System.out.println("------------remove node is null-----------" + nodeId);
-            nodeDao.removeNode(nodeId);
+            getNodeDao().removeNode(nodeId);
         }
     }
 
@@ -273,7 +273,7 @@ public class NodesManager implements Runnable {
             connectedNodes.remove(node.getId());
             handShakeNodes.remove(node.getId());
             if (node.getStatus() == Node.BAD) {
-                nodeDao.removeNode(node.getPoId());
+                getNodeDao().removeNode(node.getPoId());
             }
             return;
         }
@@ -292,7 +292,7 @@ public class NodesManager implements Runnable {
             }
         } else {
             disConnectNodes.remove(node.getId());
-            nodeDao.removeNode(node.getPoId());
+            getNodeDao().removeNode(node.getPoId());
         }
     }
 
@@ -308,7 +308,7 @@ public class NodesManager implements Runnable {
 
     public void saveNode(Node node) {
         NodePo po = NodeTransferTool.toPojo(node);
-        nodeDao.saveChange(po);
+        getNodeDao().saveChange(po);
     }
 
     public void deleteNode(String nodeId) {

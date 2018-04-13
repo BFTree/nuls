@@ -58,6 +58,8 @@ public class NodesManager implements Runnable {
 
     private Map<String, Node> handShakeNodes = new ConcurrentHashMap<>();
 
+    private Set<String> outNodeIdSet = ConcurrentHashMap.newKeySet();
+
     private ReentrantLock lock = new ReentrantLock();
 
     private AbstractNetworkParam network;
@@ -108,9 +110,7 @@ public class NodesManager implements Runnable {
      */
     public void start() {
         List<Node> nodeList = discoverHandler.getLocalNodes(20, null);
-        if (nodeList.size() < network.maxOutCount() / 2) {
-            nodeList.addAll(getSeedNodes());
-        }
+        nodeList.addAll(getSeedNodes());
         for (Node node : nodeList) {
             addNode(node);
         }
@@ -131,11 +131,16 @@ public class NodesManager implements Runnable {
 
 
     public boolean addNode(Node node) {
+        System.out.println("---------------add node-------------------" + node.getId());
         if (IpUtil.getIps().contains(node.getIp())) {
             return false;
         }
         lock.lock();
         try {
+            if (outNodeIdSet.contains(node.getId())) {
+                System.out.println("---------------add node outNodeIdSet exsit-------------------" + node.getId());
+                return false;
+            }
             if (!disConnectNodes.containsKey(node.getId()) &&
                     !connectedNodes.containsKey(node.getId()) &&
                     !handShakeNodes.containsKey(node.getId())) {
@@ -145,6 +150,8 @@ public class NodesManager implements Runnable {
                         return false;
                     }
                 }
+                System.out.println("---------------add node success-------------------" + node.getId());
+                outNodeIdSet.add(node.getId());
                 connectionManager.connectionNode(node);
                 return true;
             }
@@ -157,7 +164,7 @@ public class NodesManager implements Runnable {
     public boolean addConnNode(Node node) {
         lock.lock();
         try {
-            System.out.println("-------------addConnNode-----------" + node.toString());
+
             if (!connectedNodes.containsKey(node.getId()) && !handShakeNodes.containsKey(node.getId())) {
                 disConnectNodes.remove(node.getId());
                 connectedNodes.put(node.getId(), node);
@@ -252,6 +259,7 @@ public class NodesManager implements Runnable {
         } else {
             System.out.println("------------remove node is null-----------" + nodeId);
             getNodeDao().removeNode(nodeId);
+            outNodeIdSet.remove(nodeId);
         }
     }
 
@@ -261,6 +269,7 @@ public class NodesManager implements Runnable {
             removeNode(node);
         } else {
             System.out.println("------------removeHandshakeNode node is null-----------" + nodeId);
+            outNodeIdSet.remove(node.getId());
             getNodeDao().removeNode(nodeId);
         }
     }
@@ -275,6 +284,7 @@ public class NodesManager implements Runnable {
                     return;
                 }
             }
+            outNodeIdSet.remove(node.getId());
             node.destroy();
             removeNodeFromGroup(node);
             removeNodeHandler(node);
@@ -302,7 +312,7 @@ public class NodesManager implements Runnable {
         }
 
         if (node.getFailCount() <= NetworkConstant.FAIL_MAX_COUNT) {
-            node.setLastFailTime(System.currentTimeMillis() + 5 * 1000 * node.getFailCount());
+            node.setLastFailTime(System.currentTimeMillis() + 10 * 1000 * node.getFailCount());
             if (!disConnectNodes.containsKey(node.getId())) {
                 disConnectNodes.put(node.getId(), node);
             }
@@ -328,6 +338,7 @@ public class NodesManager implements Runnable {
     }
 
     public void deleteNode(String nodeId) {
+        outNodeIdSet.remove(nodeId);
         disConnectNodes.remove(nodeId);
     }
 
@@ -466,7 +477,7 @@ public class NodesManager implements Runnable {
                 Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
             }
             try {
-                Thread.sleep(11000);
+                Thread.sleep(10000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

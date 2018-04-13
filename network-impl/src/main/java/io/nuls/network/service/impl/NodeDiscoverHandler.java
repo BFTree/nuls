@@ -101,7 +101,6 @@ public class NodeDiscoverHandler implements Runnable {
             Node node = new Node();
             NodeTransferTool.toNode(node, po);
             node.setType(Node.OUT);
-            node.setStatus(Node.CLOSE);
             node.setMagicNumber(network.packetMagic());
             nodes.add(node);
         }

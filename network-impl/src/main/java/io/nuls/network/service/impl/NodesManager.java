@@ -107,34 +107,20 @@ public class NodesManager implements Runnable {
      * running node discovery thread
      */
     public void start() {
-//        List<Node> nodes;
-//        if (isSeed) {
-//            nodes = getSeedNodes();
-//        } else {
-//            nodes = discoverHandler.getLocalNodes();
-//            if (nodes.size() < network.maxOutCount() / 2) {
-//                int size = network.maxOutCount() / 2 - nodes.size();
-//                int count = 0;
-//                for (Node node : getSeedNodes()) {
-//                    addNode(node);
-//                    count++;
-//                    if (count == size) {
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//        for (Node node : nodes) {
-//            addNode(node);
-//        }
-
+        List<Node> nodeList = discoverHandler.getLocalNodes(20, null);
+        if (nodeList.size() < network.maxOutCount() / 2) {
+            nodeList.addAll(getSeedNodes());
+        }
+        for (Node node : nodeList) {
+            addNode(node);
+        }
         running = true;
-        TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "NetworkNodeManager", this);
         discoverHandler.start();
+        TaskManager.createAndRunThread(NulsConstant.MODULE_ID_NETWORK, "NetworkNodeManager", this);
     }
 
     public void reset() {
-        System.out.println("------------------nodeManager reset--------------------");
+        System.out.println("------------------network nodeManager reset--------------------");
         for (Node node : disConnectNodes.values()) {
             node.setFailCount(NetworkConstant.FAIL_MAX_COUNT);
         }
@@ -419,6 +405,22 @@ public class NodesManager implements Runnable {
         nodeGroups.get(groupName).removeNode(nodeId);
     }
 
+    private void removeSeedNode() {
+        Collection<Node> nodes = connectedNodes.values();
+        int count = 0;
+        List<String> seedIpList = network.getSeedIpList();
+        Collections.shuffle(seedIpList);
+        for (String ip : seedIpList) {
+            for (Node n : nodes) {
+                if (n.getIp().equals(ip)) {
+                    count++;
+                    if (count > 2) {
+                        removeNode(n);
+                    }
+                }
+            }
+        }
+    }
 
     public boolean isSeedNode(String ip) {
         return network.getSeedIpList().contains(ip);
@@ -427,32 +429,29 @@ public class NodesManager implements Runnable {
     /**
      * check the nodes when closed try to connect other one
      */
-
-    int count = 0;
-
     @Override
     public void run() {
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         while (running) {
-            count++;
-            if (count == 2) {
-                count = 0;
-                System.out.println("disConnectNodes:");
-                for (Node node : disConnectNodes.values()) {
-                    System.out.println(node.toString());
-                }
-                System.out.println();
-                System.out.println("connectedNodes:");
-                for (Node node : connectedNodes.values()) {
-                    System.out.println(node.toString());
-                }
-                System.out.println();
-                System.out.println("handShakeNodes:");
-                for (Node node : handShakeNodes.values()) {
-                    Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
-                }
+            System.out.println("disConnectNodes:");
+            for (Node node : disConnectNodes.values()) {
+                System.out.println(node.toString());
             }
-
+            System.out.println();
+            System.out.println("connectedNodes:");
+            for (Node node : connectedNodes.values()) {
+                System.out.println(node.toString());
+            }
+            System.out.println();
+            System.out.println("handShakeNodes:");
+            for (Node node : handShakeNodes.values()) {
+                Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
+            }
+            try {
+                Thread.sleep(11000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (connectedNodes.isEmpty() && handShakeNodes.size() <= 2) {
                 List<Node> seedNodes = getSeedNodes();
                 for (Node node : seedNodes) {
@@ -477,30 +476,10 @@ public class NodesManager implements Runnable {
                 }
             }
 
-            try {
-                Thread.sleep(12000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
-    private void removeSeedNode() {
-        Collection<Node> nodes = connectedNodes.values();
-        int count = 0;
-        List<String> seedIpList = network.getSeedIpList();
-        Collections.shuffle(seedIpList);
-        for (String ip : seedIpList) {
-            for (Node n : nodes) {
-                if (n.getIp().equals(ip)) {
-                    count++;
-                    if (count > 2) {
-                        removeNode(n);
-                    }
-                }
-            }
-        }
-    }
+
 
     public NodeGroup getNodeGroup(String groupName) {
         return nodeGroups.get(groupName);

@@ -245,9 +245,7 @@ public class NodesManager implements Runnable {
         if (node != null) {
             removeNode(node);
         } else {
-            //todo  remove database if it had
-
-            //nodeDao.removeNode();
+            nodeDao.removeNode(node.getId() + ":" + node.getSeverPort());
         }
     }
 
@@ -478,7 +476,6 @@ public class NodesManager implements Runnable {
 
         }
     }
-
 
 
     public NodeGroup getNodeGroup(String groupName) {

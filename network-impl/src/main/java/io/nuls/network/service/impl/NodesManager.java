@@ -455,7 +455,7 @@ public class NodesManager implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (connectedNodes.isEmpty() && handShakeNodes.size() <= 2) {
+            if (handShakeNodes.size() <= 2) {
                 List<Node> seedNodes = getSeedNodes();
                 for (Node node : seedNodes) {
                     addNode(node);

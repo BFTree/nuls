@@ -43,6 +43,8 @@ public interface LedgerService {
 
     Transaction getTx(NulsDigestData hash);
 
+    Transaction getTx(String fromHash, int fromIndex);
+
     Transaction getLocalTx(NulsDigestData hash);
 
     List<Transaction> getTxList(String address, int txType) throws Exception;
@@ -114,9 +116,9 @@ public interface LedgerService {
 
     long getAgentReward(String address, int type);
 
-    void unlockTxApprove(String txHash, long rockTime);
+    void unlockTxApprove(String txHash);
 
-    void unlockTxSave(String txHash, long lockTime);
+    void unlockTxSave(String txHash);
 
     void unlockTxRollback(String txHash);
 

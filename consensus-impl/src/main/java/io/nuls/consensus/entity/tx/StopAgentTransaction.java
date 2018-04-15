@@ -1,4 +1,5 @@
-/**
+/*
+ *
  * MIT License
  *
  * Copyright (c) 2017-2018 nuls.io
@@ -20,34 +21,33 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
+ *
  */
-package io.nuls.consensus.event;
+package io.nuls.consensus.entity.tx;
 
-import io.nuls.consensus.constant.PocConsensusConstant;
-import io.nuls.consensus.entity.BlockHashResponse;
-import io.nuls.core.constant.NulsConstant;
-import io.nuls.core.event.BaseEvent;
-import io.nuls.core.event.NoticeData;
+import io.nuls.core.chain.entity.NulsDigestData;
+import io.nuls.core.constant.TransactionConstant;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.utils.io.NulsByteBuffer;
+import io.nuls.ledger.entity.params.CoinTransferData;
+import io.nuls.ledger.entity.tx.UnlockNulsTransaction;
 
 /**
  * @author Niels
- * @date 2018/1/15
+ * @date 2017/12/4
  */
-public class BlocksHashEvent extends BaseEvent<BlockHashResponse> {
+public class StopAgentTransaction extends UnlockNulsTransaction<NulsDigestData> {
 
-    public BlocksHashEvent() {
-        super(NulsConstant.MODULE_ID_CONSENSUS, PocConsensusConstant.EVENT_TYPE_BLOCKS_HASH);
+    public StopAgentTransaction() {
+        super(TransactionConstant.TX_TYPE_STOP_AGENT);
+    }
+
+    public StopAgentTransaction(CoinTransferData params, String password) throws NulsException {
+        super(TransactionConstant.TX_TYPE_STOP_AGENT, params, password);
     }
 
     @Override
-    protected BlockHashResponse parseEventBody(NulsByteBuffer byteBuffer) throws NulsException {
-        return byteBuffer.readNulsData(new BlockHashResponse());
-    }
-
-    @Override
-    public NoticeData getNotice() {
-        return null;
+    public NulsDigestData parseTxData(NulsByteBuffer byteBuffer) throws NulsException {
+        return byteBuffer.readHash();
     }
 }

@@ -26,10 +26,10 @@ package io.nuls.consensus.entity.validator.block;
 import io.nuls.consensus.constant.PocConsensusConstant;
 import io.nuls.consensus.entity.block.BlockRoundData;
 import io.nuls.consensus.service.intf.BlockService;
-import io.nuls.core.chain.entity.Block;
 import io.nuls.core.chain.entity.BlockHeader;
 import io.nuls.core.chain.entity.NulsDigestData;
 import io.nuls.core.constant.ErrorCode;
+import io.nuls.core.constant.SeverityLevelEnum;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.utils.log.BlockLog;
@@ -66,7 +66,7 @@ public class HeaderContinuityValidator implements NulsDataValidator<BlockHeader>
                 preHeader = NulsContext.getServiceBean(BlockService.class).getBlockHeader(header.getPreHash().getDigestHex());
             } catch (NulsException e) {
                 //todo
-               Log.error(e);
+                Log.error(e);
             }
             if (null == preHeader) {
                 return ValidateResult.getFailedResult(ErrorCode.ORPHAN_BLOCK);
@@ -77,13 +77,17 @@ public class HeaderContinuityValidator implements NulsDataValidator<BlockHeader>
             } catch (NulsException e) {
                 Log.error(e);
             }
-            long shouldTime = roundData.getRoundStartTime() + roundData.getPackingIndexOfRound() * PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND*1000;
+            BlockRoundData preBlockRoundData = new BlockRoundData(preHeader.getExtend());
+            if (preBlockRoundData.getRoundIndex() == roundData.getRoundIndex() && preBlockRoundData.getPackingIndexOfRound() >= roundData.getPackingIndexOfRound()) {
+                return ValidateResult.getFailedResult(SeverityLevelEnum.FLAGRANT_FOUL, "the packing index of round is wrong");
+            }
+            long shouldTime = roundData.getRoundStartTime() + roundData.getPackingIndexOfRound() * PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000;
             //todo 3 seconds error
             long difference = header.getTime() - shouldTime;
-            long timeout = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND*1000/2;
+            long timeout = PocConsensusConstant.BLOCK_TIME_INTERVAL_SECOND * 1000 / 2;
             failed = difference > timeout || difference < -timeout;
             if (failed) {
-                BlockLog.debug("header validate failed:"+header.getHeight()+" , time difference："+difference);
+                BlockLog.debug("header validate failed:" + header.getHeight() + " , time difference：" + difference);
                 break;
             }
         } while (false);

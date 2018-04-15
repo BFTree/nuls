@@ -32,7 +32,6 @@ import io.nuls.core.chain.entity.Block;
 import io.nuls.core.chain.entity.BlockHeader;
 import io.nuls.core.chain.entity.Transaction;
 import io.nuls.core.utils.log.BlockLog;
-import io.nuls.core.utils.log.Log;
 
 import java.util.List;
 
@@ -71,10 +70,7 @@ public class ConfirmingBlockCacheManager {
         String hash = block.getHeader().getHash().getDigestHex();
         headerCacheMap.put(hash, block.getHeader());
         txsCacheMap.put(hash, block.getTxs());
-        BlockLog.debug("cache block height:" + block.getHeader().getHeight() + ", preHash:" + block.getHeader().getPreHash() + " , hash:" + block.getHeader().getHash() + ", address:" + Address.fromHashs(block.getHeader().getPackingAddress()));
-        if (null == headerCacheMap.get(hash)) {
-            System.out.println();
-        }
+        BlockLog.info("cache block height:" + block.getHeader().getHeight() + ", preHash:" + block.getHeader().getPreHash() + " , hash:" + block.getHeader().getHash() + ", address:" + Address.fromHashs(block.getHeader().getPackingAddress()));
         return true;
     }
 

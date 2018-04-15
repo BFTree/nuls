@@ -1,18 +1,18 @@
 /**
  * MIT License
- **
+ * *
  * Copyright (c) 2017-2018 nuls.io
- **
+ * *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- **
+ * *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- **
+ * *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,14 +23,10 @@
  */
 package io.nuls.consensus.entity.block;
 
-import io.nuls.consensus.cache.manager.block.BlockCacheBuffer;
-import io.nuls.consensus.cache.manager.block.ConfirmingBlockCacheManager;
 import io.nuls.consensus.constant.PocConsensusConstant;
-import io.nuls.consensus.manager.RoundManager;
+import io.nuls.consensus.manager.BlockManager;
 import io.nuls.consensus.service.intf.BlockService;
-import io.nuls.core.chain.entity.Block;
 import io.nuls.core.chain.entity.BlockHeader;
-import io.nuls.core.chain.entity.NulsDigestData;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.exception.NulsException;
 import io.nuls.core.utils.log.BlockLog;
@@ -49,10 +45,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class BifurcateProcessor {
 
     private static final BifurcateProcessor INSTANCE = new BifurcateProcessor();
-
-    private ConfirmingBlockCacheManager confirmingBlockCacheManager = ConfirmingBlockCacheManager.getInstance();
-
-    private BlockCacheBuffer blockCacheBuffer = BlockCacheBuffer.getInstance();
 
     private BlockHeaderChain approvingChain;
 
@@ -82,7 +74,7 @@ public class BifurcateProcessor {
     private void checkIt() {
         long maxHeight = 0L;
         BlockHeaderChain longestChain = null;
-        StringBuilder str = new StringBuilder("++++++++++++++++++++++++chain info:");
+        StringBuilder str = new StringBuilder("++++++++++++++++++++++++switch chain:");
         for (BlockHeaderChain chain : chainList) {
             if (chain.size() == 0) {
                 continue;
@@ -91,7 +83,7 @@ public class BifurcateProcessor {
             if (approvingChain != null && chain.getId().equals(approvingChain.getId())) {
                 type = " approving ";
             }
-            str.append("\nid:"+chain.getId()+"," + type + "chain:start-" + chain.getHeaderDigestList().get(0).getHeight() + ", end-" + chain.getLastHd().getHeight());
+            str.append("\nid:" + chain.getId() + "," + type + "chain:start-" + chain.getHeaderDigestList().get(0).getHeight() + ", end-" + chain.getLastHd().getHeight());
             long height = chain.getLastHd().getHeight();
             if (maxHeight < height) {
                 maxHeight = height;
@@ -108,59 +100,48 @@ public class BifurcateProcessor {
             BlockLog.debug("the longest chain not found!");
             return;
         }
-        BlockLog.debug(str.toString()+"\n the longest is:"+longestChain.getId());
-        BlockHeaderChain lastApprovingChain  = this.approvingChain;
+        BlockHeaderChain lastApprovingChain = this.approvingChain;
         this.approvingChain = longestChain;
         if (lastApprovingChain != null && !lastApprovingChain.getId().equals(longestChain.getId())) {
+            BlockLog.info(str.toString() + "\n the longest is:" + longestChain.getId());
             BlockService blockService = NulsContext.getServiceBean(BlockService.class);
             List<HeaderDigest> nextChain = new ArrayList<>(longestChain.getHeaderDigestList());
             List<HeaderDigest> lastChain = new ArrayList<>(lastApprovingChain.getHeaderDigestList());
             List<HeaderDigest> rollbackChain = new ArrayList<>();
-
-            for(int i = lastChain.size()-1;i>=0;i--){
+            long startHeight = 0L;
+            for (int i = lastChain.size() - 1; i >= 0; i--) {
                 HeaderDigest hd = lastChain.get(i);
-                if(nextChain.contains(hd)){
+                if (nextChain.contains(hd)) {
+                    startHeight = hd.getHeight();
                     break;
                 }
                 rollbackChain.add(hd);
             }
-            for(int i = rollbackChain.size()-1;i>=0;i--){
+            for (int i = rollbackChain.size() - 1; i >= 0; i--) {
                 try {
                     blockService.rollbackBlock(rollbackChain.get(i).getHash());
                 } catch (NulsException e) {
                     Log.error(e);
                 }
             }
-//            List<HeaderDigest> hdList = new ArrayList<>(approvingChain.getHeaderDigestList());
-//            for (int i = hdList.size() - 1; i >= 0; i--) {
-//                HeaderDigest hd = hdList.get(i);
-//                if (longestChain.contains(hd)) {
-//                    break;
-//                }
-//                try {
-//                    blockService.rollbackBlock(hd.getHash());
-//                } catch (NulsException e) {
-//                    Log.error(e);
-//                }
-//            }
-//            List<HeaderDigest> longestHdList = new ArrayList<>(longestChain.getHeaderDigestList());
-//            for (int i = 0; i < longestHdList.size(); i++) {
-//                HeaderDigest hd = longestHdList.get(i);
-//                if (approvingChain.contains(hd)) {
-//                    continue;
-//                }
-//                blockService.approvalBlock(hd.getHash());
-//            }
+            List<HeaderDigest> hdList = new ArrayList<>(approvingChain.getHeaderDigestList());
+            for (HeaderDigest hd : hdList) {
+                if (hd.getHeight() <= startHeight) {
+                    continue;
+                }
+                BlockManager bm = BlockManager.getInstance();
+                bm.appravalBlock(bm.getBlock(hd.getHash()));
+            }
+
+
         }
 
-        if(null==approvingChain){
+        if (null == approvingChain) {
             return;
         }
-        Set<HeaderDigest> removeHashSet = new HashSet<>();
         for (int i = chainList.size() - 1; i >= 0; i--) {
             BlockHeaderChain chain = chainList.get(i);
             if (chain.size() < (approvingChain.size() - 6)) {
-                removeHashSet.addAll(chain.getHeaderDigestList());
                 this.chainList.remove(chain);
             }
         }
@@ -185,9 +166,6 @@ public class BifurcateProcessor {
                 chainList.add(newChain);
                 return true;
             }
-        }
-        if (this.chainList.size() > 0) {
-            System.out.println();
         }
         BlockHeaderChain chain = new BlockHeaderChain();
         chain.addHeader(header);

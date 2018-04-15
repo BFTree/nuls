@@ -28,7 +28,6 @@ import io.nuls.consensus.constant.PocConsensusConstant;
 import io.nuls.core.constant.ErrorCode;
 import io.nuls.core.exception.NulsRuntimeException;
 import io.nuls.core.utils.date.TimeService;
-import io.nuls.core.utils.log.BlockLog;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -159,6 +158,7 @@ public class PocMeetingRound {
             str.append(member.getPackingAddress());
             str.append(" ,order:" + member.getPackingIndexOfRound());
             str.append(",packTime:" + new Date(member.getPackEndTime()));
+            str.append(",creditVal:"+member.getRealCreditVal());
             str.append("\n");
         }
         if (null == this.getPreRound()) {

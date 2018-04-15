@@ -64,16 +64,14 @@ public class TaskManager {
         if (factory == null) {
             throw new RuntimeException("thread factory cannot be null!");
         }
-        //Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class};
-        Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class, RejectedExecutionHandler.class};
-        RejectJobHandler rejectJobHandler = new RejectJobHandler();//TODO remove for test
+        Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class};
         Object[] paramArgs = null;
         if(queueSize>0) {
             paramArgs = new Object[]{threadCount, threadCount, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(queueSize), factory, rejectJobHandler};
+                    new LinkedBlockingQueue<>(queueSize), factory};
         }else{
             paramArgs = new Object[]{threadCount, threadCount, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(), factory, rejectJobHandler};
+                    new LinkedBlockingQueue<>(), factory};
         }
         ThreadPoolExecutor pool = AopUtils.createProxy(ThreadPoolExecutor.class, paramClasses, paramArgs, new ThreadPoolInterceiptor());
         THREAD_DATA_CACHE.putPool(factory.getModuleId(), factory.getPoolName(), pool);
@@ -99,10 +97,6 @@ public class TaskManager {
         }
         if (TEMPORARY_THREAD_POOL == null) {
             throw new RuntimeException("temporary thread pool not initialized yet");
-        }
-        BlockingQueue<Runnable> queue = TEMPORARY_THREAD_POOL.getQueue();
-        if(queue.size() > 100) {
-            System.out.println("Queue size > 100 warning!!!");
         }
         TEMPORARY_THREAD_POOL.execute(runnable);
     }

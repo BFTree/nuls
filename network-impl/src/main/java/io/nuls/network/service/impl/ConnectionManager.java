@@ -185,10 +185,8 @@ public class ConnectionManager {
             @Override
             public String toString() {
                 StringBuilder log = new StringBuilder();
-                log.append("eventHeader: " + networkEvent.getHeader())
-                        .append(", eventBody: " + networkEvent.getEventBody())
+                log.append("event: " + networkEvent.toString())
                         .append(", hash: " + networkEvent.getHash())
-                        .append(", toString: " + networkEvent.toString())
                         .append(", Node: " + node.toString());
                 return log.toString();
             }

@@ -181,6 +181,17 @@ public class ConnectionManager {
                     Log.error(e);
                 }
             }
+
+            @Override
+            public String toString() {
+                StringBuilder log = new StringBuilder();
+                log.append("eventHeader: " + networkEvent.getHeader())
+                        .append(", eventBody: " + networkEvent.getEventBody())
+                        .append(", hash: " + networkEvent.getHash())
+                        .append(", toString: " + networkEvent.toString())
+                        .append(", Node: " + node.toString());
+                return log.toString();
+            }
         });
     }
 

@@ -64,14 +64,16 @@ public class TaskManager {
         if (factory == null) {
             throw new RuntimeException("thread factory cannot be null!");
         }
-        Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class};
+        //Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class};
+        Class[] paramClasses = new Class[]{int.class, int.class, long.class, TimeUnit.class, BlockingQueue.class, ThreadFactory.class, RejectedExecutionHandler.class};
+        RejectJobHandler rejectJobHandler = new RejectJobHandler();//TODO remove for test
         Object[] paramArgs = null;
         if(queueSize>0) {
             paramArgs = new Object[]{threadCount, threadCount, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(queueSize), factory};
+                    new LinkedBlockingQueue<>(queueSize), factory, rejectJobHandler};
         }else{
             paramArgs = new Object[]{threadCount, threadCount, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(), factory};
+                    new LinkedBlockingQueue<>(), factory, rejectJobHandler};
         }
         ThreadPoolExecutor pool = AopUtils.createProxy(ThreadPoolExecutor.class, paramClasses, paramArgs, new ThreadPoolInterceiptor());
         THREAD_DATA_CACHE.putPool(factory.getModuleId(), factory.getPoolName(), pool);

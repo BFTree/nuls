@@ -114,8 +114,8 @@ public class PocConsensusServiceImpl implements ConsensusService {
         tx.setScriptSig(accountService.createP2PKHScriptSigFromDigest(tx.getHash(), account, password).serialize());
         tx.verifyWithException();
         event.setEventBody(tx);
-        List<String> nodeList = eventBroadcaster.broadcastHashAndCache(event, true);
-        if (null == nodeList || nodeList.isEmpty()) {
+        boolean b  = eventBroadcaster.publishToLocal(event);
+        if (!b) {
             throw new NulsRuntimeException(ErrorCode.FAILED, "broadcast transaction failed!");
         }
         return tx;
@@ -156,8 +156,8 @@ public class PocConsensusServiceImpl implements ConsensusService {
         tx.setScriptSig(accountService.createP2PKHScriptSigFromDigest(tx.getHash(), account, password).serialize());
         tx.verifyWithException();
         event.setEventBody(tx);
-        List<String> nodeList = eventBroadcaster.broadcastAndCache(event, true);
-        if (null == nodeList || nodeList.isEmpty()) {
+        boolean b = eventBroadcaster.publishToLocal(event);
+        if (!b) {
             throw new NulsRuntimeException(ErrorCode.FAILED, "broadcast transaction failed!");
         }
         return tx;
@@ -215,7 +215,7 @@ public class PocConsensusServiceImpl implements ConsensusService {
             tx.setScriptSig(accountService.createP2PKHScriptSigFromDigest(tx.getHash(), account, password).serialize());
             tx.verifyWithException();
             event.setEventBody(tx);
-            eventBroadcaster.broadcastHashAndCache(event, true);
+            eventBroadcaster.publishToLocal(event);
 
             return tx;
         }
@@ -234,7 +234,7 @@ public class PocConsensusServiceImpl implements ConsensusService {
         tx.setScriptSig(accountService.createP2PKHScriptSigFromDigest(tx.getHash(), account, password).serialize());
         tx.verifyWithException();
         event.setEventBody(tx);
-        eventBroadcaster.broadcastHashAndCache(event, true);
+        eventBroadcaster.publishToLocal(event);
         return tx;
     }
 
@@ -506,7 +506,7 @@ public class PocConsensusServiceImpl implements ConsensusService {
             Consensus<Deposit> cd = depositList.get(i);
             if (isAddress && !cd.getAddress().equals(address)) {
                 depositList.remove(i);
-            }
+            }else
             if (null != agent && !cd.getExtend().getAgentHash().equals(agent.getHexHash())) {
                 depositList.remove(i);
             }

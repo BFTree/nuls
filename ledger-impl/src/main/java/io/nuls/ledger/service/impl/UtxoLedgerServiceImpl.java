@@ -51,7 +51,10 @@ import io.nuls.db.entity.UtxoOutputPo;
 import io.nuls.db.transactional.annotation.DbSession;
 import io.nuls.event.bus.service.intf.EventBroadcaster;
 import io.nuls.ledger.constant.LedgerConstant;
-import io.nuls.ledger.entity.*;
+import io.nuls.ledger.entity.Balance;
+import io.nuls.ledger.entity.OutPutStatusEnum;
+import io.nuls.ledger.entity.UtxoData;
+import io.nuls.ledger.entity.UtxoOutput;
 import io.nuls.ledger.entity.params.Coin;
 import io.nuls.ledger.entity.params.CoinTransferData;
 import io.nuls.ledger.entity.params.OperationType;
@@ -432,7 +435,7 @@ public class UtxoLedgerServiceImpl implements LedgerService {
 
             TransactionEvent event = new TransactionEvent();
             event.setEventBody(tx);
-            eventBroadcaster.broadcastAndCache(event, true);
+            eventBroadcaster.publishToLocal(event);
         } catch (Exception e) {
             Log.error(e);
             return new Result(false, e.getMessage());
@@ -458,7 +461,7 @@ public class UtxoLedgerServiceImpl implements LedgerService {
             tx.verify();
             TransactionEvent event = new TransactionEvent();
             event.setEventBody(tx);
-            eventBroadcaster.broadcastAndCacheAysn(event, true);
+            eventBroadcaster.publishToLocal(event);
 
         } catch (Exception e) {
             Log.error(e);
@@ -573,6 +576,7 @@ public class UtxoLedgerServiceImpl implements LedgerService {
         if (tx.getStatus() == TxStatusEnum.CACHED) {
             return;
         }
+        BlockLog.info("rollback tx ==================================================", tx.getHash());
         List<TransactionService> serviceList = getServiceList(tx.getClass());
         for (TransactionService service : serviceList) {
             service.onRollback(tx);
@@ -760,5 +764,11 @@ public class UtxoLedgerServiceImpl implements LedgerService {
             clazz = clazz.getSuperclass();
         }
         return list;
+    }
+
+    @Override
+    public void resetLedgerCache() {
+        ledgerCacheService.clear();
+        UtxoCoinManager.getInstance().cacheAllUnSpendUtxo();
     }
 }

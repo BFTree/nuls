@@ -1,8 +1,8 @@
 package io.nuls.consensus.service.impl;
 
+import io.nuls.consensus.manager.ConsensusManager;
 import io.nuls.consensus.service.intf.DownloadService;
 import io.nuls.consensus.service.intf.SystemService;
-import io.nuls.consensus.thread.ConsensusMeetingRunner;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.utils.date.TimeService;
 import io.nuls.core.utils.log.Log;
@@ -15,17 +15,17 @@ public class SystemServiceImpl implements SystemService {
 
     private static final long INTERVAL_TIME = 60000L;
 
-    private long lastResetTime ;
+    private long lastResetTime;
 
     /**
      * 重置系统，包括重置网络、同步、共识
      * Reset the system, including resetting the network, synchronization, consensus
-     * @param reason
+     *
      * @return boolean
      */
     @Override
     public boolean resetSystem(String reason) {
-        if((TimeService.currentTimeMillis()-lastResetTime)<=INTERVAL_TIME){
+        if ((TimeService.currentTimeMillis() - lastResetTime) <= INTERVAL_TIME) {
             Log.info("system reset interrupt!");
             return true;
         }
@@ -38,8 +38,7 @@ public class SystemServiceImpl implements SystemService {
         DownloadService downloadService = NulsContext.getServiceBean(DownloadService.class);
         downloadService.reset();
 
-        ConsensusMeetingRunner consensusMeetingRunner = ConsensusMeetingRunner.getInstance();
-        consensusMeetingRunner.resetConsensus();
+        ConsensusManager.getInstance().clearCache();
 
         Log.info("---------------reset end----------------");
 

@@ -38,6 +38,7 @@ import io.nuls.core.chain.entity.BlockHeader;
 import io.nuls.core.chain.entity.NulsDigestData;
 import io.nuls.core.chain.entity.Transaction;
 import io.nuls.core.constant.ErrorCode;
+import io.nuls.core.constant.TransactionConstant;
 import io.nuls.core.constant.TxStatusEnum;
 import io.nuls.core.context.NulsContext;
 import io.nuls.core.dto.Page;
@@ -223,11 +224,11 @@ public class BlockServiceImpl implements BlockService {
         if (end <= cachePoList.size()) {
             Page<BlockHeaderPo> page = new Page<>();
             page.setList(cachePoList.subList(start, end));
-            if(null==nodeAddress){
+            if (null == nodeAddress) {
                 page.setTotal(NulsContext.getInstance().getBestHeight() + 1);
-            }else{
+            } else {
                 Page<BlockHeaderPo> tempPage = blockStorageService.getBlocListByAddress1(nodeAddress, type, 1, 1);
-                page.setTotal(tempPage.getTotal()+cachePoList.size());
+                page.setTotal(tempPage.getTotal() + cachePoList.size());
             }
             page.setPageNumber(pageNumber);
             page.setPageSize(pageSize);
@@ -348,14 +349,24 @@ public class BlockServiceImpl implements BlockService {
     }
 
     private void rollback(List<Transaction> txs, int max) {
-        for (int x = 0; x <= max; x++) {
-            Transaction tx = txs.get(x);
+        int i = max;
+        if (max >= txs.size()) {
+            i = txs.size() - 1;
+        }
+        for (; i >= 0; i--) {
+            Transaction tx = txs.get(i);
+            if (tx.getType() != TransactionConstant.TX_TYPE_COIN_BASE && tx.getType() != TransactionConstant.TX_TYPE_YELLOW_PUNISH && tx.getType() != TransactionConstant.TX_TYPE_RED_PUNISH) {
+                txCacheManager.putTxToOrphanCache(tx);
+            }
+            if (tx.getStatus() == TxStatusEnum.AGREED && !ledgerService.checkTxIsMySend(tx)) {
+                continue;
+            }
             try {
                 ledgerService.rollbackTx(tx);
             } catch (NulsException e) {
                 Log.error(e);
             }
-            txCacheManager.putTxToOrphanCache(tx);
+
         }
 
     }

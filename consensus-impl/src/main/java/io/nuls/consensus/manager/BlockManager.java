@@ -325,19 +325,23 @@ public class BlockManager {
 
     private void rollbackTxList(List<Transaction> txList, int start, int end) {
         List<NulsDigestData> txHashList = new ArrayList<>();
-        for (int i = start; i <= end && i < txList.size(); i++) {
+        int i = end;
+        if(end>=txList.size()){
+            i = txList.size()-1;
+        }
+        for (; i >=0; i--) {
             Transaction tx = txList.get(i);
-            if (tx.getStatus() == TxStatusEnum.AGREED) {
+            if (tx.getStatus() == TxStatusEnum.AGREED&&!ledgerService.checkTxIsMySend(tx)) {
                 try {
-
                     ledgerService.rollbackTx(tx);
-
                 } catch (NulsException e) {
                     Log.error(e);
                 }
                 txHashList.add(tx.getHash());
             }
-            txCacheManager.putTxToOrphanCache(tx);
+            if(tx.getType()!=TransactionConstant.TX_TYPE_COIN_BASE&&tx.getType()!=TransactionConstant.TX_TYPE_YELLOW_PUNISH&&tx.getType()!=TransactionConstant.TX_TYPE_RED_PUNISH){
+                txCacheManager.putTxToOrphanCache(tx);
+            }
         }
         txCacheManager.removeTxesFromConfirmingCache(txHashList);
 

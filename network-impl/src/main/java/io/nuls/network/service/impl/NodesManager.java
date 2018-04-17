@@ -53,6 +53,8 @@ public class NodesManager implements Runnable {
 
     private Map<String, NodeGroup> nodeGroups = new ConcurrentHashMap<>();
 
+    private Map<String, Integer> firstUnConnectedNodes = new ConcurrentHashMap<>();
+
     private Map<String, Node> disConnectNodes = new ConcurrentHashMap<>();
 
     private Map<String, Node> connectedNodes = new ConcurrentHashMap<>();
@@ -140,6 +142,11 @@ public class NodesManager implements Runnable {
             if (outNodeIdSet.contains(node.getId())) {
                 return false;
             }
+
+            if(!checkFirstUnConnectedNode(node.getId())) {
+                return false;
+            }
+
             if (!disConnectNodes.containsKey(node.getId()) &&
                     !connectedNodes.containsKey(node.getId()) &&
                     !handShakeNodes.containsKey(node.getId())) {
@@ -164,6 +171,9 @@ public class NodesManager implements Runnable {
         try {
 
             if (!connectedNodes.containsKey(node.getId()) && !handShakeNodes.containsKey(node.getId())) {
+                // those nodes that are not connected at once, remove it when connected +
+                firstUnConnectedNodes.remove(node.getId());
+                // those nodes that are not connected at once, remove it when connected -
                 disConnectNodes.remove(node.getId());
                 connectedNodes.put(node.getId(), node);
                 return true;
@@ -467,6 +477,42 @@ public class NodesManager implements Runnable {
             //for (Node node : handShakeNodes.values()) {
                // Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
             //}
+
+            //=== +
+            //TODO remove trace
+            Log.info("firstUnConnectedNodes:" + firstUnConnectedNodes.size());
+            Log.info("disConnectNodes:" + disConnectNodes.size());
+            Log.info("connectedNodes:" + connectedNodes.size());
+            Log.info("handShakeNodes:" + handShakeNodes.size());
+            System.out.println();
+            System.out.println();
+
+            System.out.println("firstUnConnectedNodes:");
+            System.out.println("\t"+firstUnConnectedNodes);
+            System.out.println("\t-------------");
+            System.out.println();
+
+            System.out.println("disConnectNodes:");
+            for (Node node : disConnectNodes.values()) {
+                System.out.println("\t"+node.toString());
+            }
+            System.out.println("\t-------------");
+            System.out.println();
+
+            System.out.println("connectedNodes:");
+            for (Node node : connectedNodes.values()) {
+                System.out.println("\t"+node.toString());
+            }
+            System.out.println("\t-------------");
+            System.out.println();
+
+            System.out.println("handShakeNodes:");
+            for (Node node : handShakeNodes.values()) {
+                System.out.println("\t"+node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
+            }
+            System.out.println("\t-------------");
+            System.out.println();
+            //=== -
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {
@@ -532,5 +578,55 @@ public class NodesManager implements Runnable {
 
     public void setSeed(boolean seed) {
         isSeed = seed;
+    }
+
+    /**
+     * those nodes that are not connected at once, reconnection 6 times
+     * @param nodeId
+     * @return
+     */
+    public void validateFirstUnConnectedNode(String nodeId) {
+        if(nodeId == null)
+            return;
+        Node node = getNode(nodeId);
+        if(node == null) {
+            // seed nodes
+            for (String ip : network.getSeedIpList()) {
+                if(nodeId.startsWith(ip)) {
+                    return;
+                }
+            }
+            Integer count = firstUnConnectedNodes.get(nodeId);
+            if(count == null) {
+                firstUnConnectedNodes.put(nodeId, 1);
+            } else {
+                firstUnConnectedNodes.put(nodeId, ++count);
+            }
+        }
+    }
+
+    /**
+     * those nodes that are not connected at once, reconnection 6 times
+     * and then start counting, reconnection: counter >= 60
+     * [0,6] (6, 60) [60,]
+     * @param nodeId
+     * @return
+     */
+    private boolean checkFirstUnConnectedNode(String nodeId) {
+        Integer count = firstUnConnectedNodes.get(nodeId);
+        if(count == null)
+            return true;
+        if(count <= NetworkConstant.FAIL_MAX_COUNT) {
+            // [0,6]
+            return true;
+        } else if(count < (NetworkConstant.FAIL_MAX_COUNT * 10)){
+            // (6, 60)
+            firstUnConnectedNodes.put(nodeId, ++count);
+            return false;
+        } else {
+            // [60, ~]
+            firstUnConnectedNodes.remove(nodeId);
+            return true;
+        }
     }
 }

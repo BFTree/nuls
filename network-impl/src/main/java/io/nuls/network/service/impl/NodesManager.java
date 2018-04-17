@@ -478,41 +478,9 @@ public class NodesManager implements Runnable {
                // Log.info(node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
             //}
 
-            //=== +
-            //TODO remove trace
-            Log.info("firstUnConnectedNodes:" + firstUnConnectedNodes.size());
-            Log.info("disConnectNodes:" + disConnectNodes.size());
-            Log.info("connectedNodes:" + connectedNodes.size());
-            Log.info("handShakeNodes:" + handShakeNodes.size());
-            System.out.println();
-            System.out.println();
-
-            System.out.println("firstUnConnectedNodes:");
-            System.out.println("\t"+firstUnConnectedNodes);
-            System.out.println("\t-------------");
-            System.out.println();
-
-            System.out.println("disConnectNodes:");
-            for (Node node : disConnectNodes.values()) {
-                System.out.println("\t"+node.toString());
+            if(firstUnConnectedNodes.size() > 50) {
+                firstUnConnectedNodes.clear();
             }
-            System.out.println("\t-------------");
-            System.out.println();
-
-            System.out.println("connectedNodes:");
-            for (Node node : connectedNodes.values()) {
-                System.out.println("\t"+node.toString());
-            }
-            System.out.println("\t-------------");
-            System.out.println();
-
-            System.out.println("handShakeNodes:");
-            for (Node node : handShakeNodes.values()) {
-                System.out.println("\t"+node.toString() + ",blockHeight:" + node.getVersionMessage().getBestBlockHeight());
-            }
-            System.out.println("\t-------------");
-            System.out.println();
-            //=== -
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException e) {

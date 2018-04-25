@@ -58,6 +58,7 @@ import io.nuls.protocol.script.P2PKHScript;
 import io.nuls.protocol.script.P2PKHScriptSig;
 import io.nuls.protocol.utils.io.NulsByteBuffer;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -195,7 +196,7 @@ public class UtxoCoinDataProvider implements CoinDataProvider {
         Set<String> addressSet = new HashSet<>();
         lock.lock();
         try {
-            processDataInput(utxoData, spends, inputPoList, spendPoList, addressSet);
+            processDataInput(utxoData, spends, inputPoList, spendPoList, addressSet, tx);
 
             refreshCache(spends, utxoData.getOutputs());
 
@@ -210,13 +211,17 @@ public class UtxoCoinDataProvider implements CoinDataProvider {
 
             for (String address : addressSet) {
                 TxAccountRelationPo relationPo = new TxAccountRelationPo(tx.getHash().getDigestHex(), address);
-                txRelations.add(relationPo);
+                if (relationDataService.getRelationCount(relationPo.getTxHash(), address) == 0) {
+                    relationDataService.save(relationPo);
+                }
+//                txRelations.add(relationPo);
             }
 
             outputDataService.updateStatus(spendPoList);
             inputDataService.save(inputPoList);
             outputDataService.save(outputPoList);
-            relationDataService.save(txRelations);
+
+//            relationDataService.save(txRelations);
 //
 //            for (String address : addressSet) {
 //                UtxoTransactionTool.getInstance().calcBalance(address, true);
@@ -244,7 +249,7 @@ public class UtxoCoinDataProvider implements CoinDataProvider {
 
     //Check if the input referenced output has been spent
     private void processDataInput(UtxoData utxoData, List<UtxoOutput> spends, List<UtxoInputPo> inputPoList,
-                                  List<UtxoOutputPo> spendPoList, Set<String> addressSet) {
+                                  List<UtxoOutputPo> spendPoList, Set<String> addressSet, Transaction tx) {
         Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < utxoData.getInputs().size(); i++) {
             UtxoInput input = utxoData.getInputs().get(i);
@@ -260,8 +265,14 @@ public class UtxoCoinDataProvider implements CoinDataProvider {
 //                    throw new NulsRuntimeException(ErrorCode.UTXO_NOT_FOUND);
 //                }
 //                output = UtxoTransferTool.toOutput(outputPo);
-            if (!output.isUsable()) {
-                throw new NulsRuntimeException(ErrorCode.UTXO_STATUS_CHANGE);
+            if (tx.getType() == TransactionConstant.TX_TYPE_STOP_AGENT) {
+                if (output.getStatus() != OutPutStatusEnum.UTXO_CONSENSUS_LOCK) {
+                    throw new NulsRuntimeException(ErrorCode.UTXO_STATUS_CHANGE);
+                }
+            } else {
+                if (!output.isUsable()) {
+                    throw new NulsRuntimeException(ErrorCode.UTXO_STATUS_CHANGE);
+                }
             }
             output.setStatus(OutPutStatusEnum.UTXO_SPENT);
             spends.add(output);
@@ -321,10 +332,6 @@ public class UtxoCoinDataProvider implements CoinDataProvider {
         String txHash = tx.getHash().getDigestHex();
         inputDataService.deleteByHash(txHash);
         relationDataService.deleteRelation(txHash);
-    }
-
-    public void sarollback(CoinData coinData, Transaction tx) {
-
     }
 
     @Override

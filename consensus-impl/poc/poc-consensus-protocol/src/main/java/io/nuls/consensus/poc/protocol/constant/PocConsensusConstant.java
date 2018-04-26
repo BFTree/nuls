@@ -30,7 +30,7 @@ import io.nuls.protocol.model.Na;
  */
 public interface PocConsensusConstant {
 
-    int ALIVE_MIN_NODE_COUNT = 1;
+    int ALIVE_MIN_NODE_COUNT = 2;
 
     String CFG_CONSENSUS_SECTION = "consensus";
     String PROPERTY_PARTAKE_PACKING = "partake.packing";
@@ -84,8 +84,8 @@ public interface PocConsensusConstant {
     /**
      * commission rate,UNIT:%
      */
-    double MAX_COMMISSION_RATE = 20;
-    double MIN_COMMISSION_RATE = 0;
+    double MAX_COMMISSION_RATE = 100;
+    double MIN_COMMISSION_RATE = 10;
     /**
      * unit:day
      */
